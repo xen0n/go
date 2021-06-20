@@ -9,6 +9,7 @@ import (
 	"cmd/internal/obj"
 	"cmd/internal/obj/arm"
 	"cmd/internal/obj/arm64"
+	"cmd/internal/obj/loong"
 	"cmd/internal/obj/mips"
 	"cmd/internal/obj/ppc64"
 	"cmd/internal/obj/riscv"
@@ -60,6 +61,8 @@ func Set(GOARCH string) *Arch {
 		return archArm()
 	case "arm64":
 		return archArm64()
+	case "loong64":
+		return archLoong64()
 	case "mips":
 		return archMips(&mips.Linkmips)
 	case "mipsle":
@@ -97,6 +100,16 @@ func jumpRISCV(word string) bool {
 
 func jumpWasm(word string) bool {
 	return word == "JMP" || word == "CALL" || word == "Call" || word == "Br" || word == "BrIf"
+}
+
+func jumpLoong(word string) bool {
+	switch word {
+	case "BEQZ", "BNEZ", "BCEQZ", "BCNEZ",
+		"JIRL", "B", "BL",
+		"BEQ", "BNE", "BGT", "BLE", "BGTU", "BLEU":
+		return true
+	}
+	return false
 }
 
 func archX86(linkArch *obj.LinkArch) *Arch {
@@ -719,5 +732,124 @@ func archWasm() *Arch {
 		RegisterPrefix: nil,
 		RegisterNumber: nilRegisterNumber,
 		IsJump:         jumpWasm,
+	}
+}
+
+func archLoong64() *Arch {
+	register := make(map[string]int16)
+
+	// Standard register names.
+	for i := loong.REG_R0; i <= loong.REG_R31; i++ {
+		switch i {
+		case loong.REG_G, loong.REG_RESERVED:
+			// These should not be exposed to user code.
+			continue
+		}
+		name := fmt.Sprintf("R%d", i-loong.REG_R0)
+		register[name] = int16(i)
+	}
+	for i := loong.REG_F0; i <= loong.REG_F31; i++ {
+		name := fmt.Sprintf("F%d", i-loong.REG_F0)
+		register[name] = int16(i)
+	}
+	for i := loong.REG_FCC0; i <= loong.REG_FCC7; i++ {
+		name := fmt.Sprintf("FCC%d", i-loong.REG_FCC0)
+		register[name] = int16(i)
+	}
+
+	// ABI names for integer registers.
+	register["ZERO"] = loong.REG_ZERO
+	register["RA"] = loong.REG_RA
+	register["TP"] = loong.REG_TP
+	register["SP"] = loong.REG_SP
+	register["A0"] = loong.REG_A0
+	register["A1"] = loong.REG_A1
+	register["A2"] = loong.REG_A2
+	register["A3"] = loong.REG_A3
+	register["A4"] = loong.REG_A4
+	register["A5"] = loong.REG_A5
+	register["A6"] = loong.REG_A6
+	register["A7"] = loong.REG_A7
+	register["T0"] = loong.REG_T0
+	register["T1"] = loong.REG_T1
+	register["T2"] = loong.REG_T2
+	register["T3"] = loong.REG_T3
+	register["T4"] = loong.REG_T4
+	register["T5"] = loong.REG_T5
+	register["T6"] = loong.REG_T6
+	register["T7"] = loong.REG_T7
+	register["T8"] = loong.REG_T8
+	// Skip the reserved R21, and R22 which is the ABI FP register.
+	register["S0"] = loong.REG_S0
+	register["S1"] = loong.REG_S1
+	register["S2"] = loong.REG_S2
+	register["S3"] = loong.REG_S3
+	register["S4"] = loong.REG_S4
+	register["S5"] = loong.REG_S5
+	register["S6"] = loong.REG_S6
+	register["S7"] = loong.REG_S7
+	// Skip S8 which is the g register.
+
+	// Go runtime register names.
+	register["g"] = loong.REG_G
+	register["CTXT"] = loong.REG_CTXT
+	register["TMP"] = loong.REG_TMP
+
+	// ABI names for FP registers.
+	register["FA0"] = loong.REG_FA0
+	register["FA1"] = loong.REG_FA1
+	register["FA2"] = loong.REG_FA2
+	register["FA3"] = loong.REG_FA3
+	register["FA4"] = loong.REG_FA4
+	register["FA5"] = loong.REG_FA5
+	register["FA6"] = loong.REG_FA6
+	register["FA7"] = loong.REG_FA7
+	register["FT0"] = loong.REG_FT0
+	register["FT1"] = loong.REG_FT1
+	register["FT2"] = loong.REG_FT2
+	register["FT3"] = loong.REG_FT3
+	register["FT4"] = loong.REG_FT4
+	register["FT5"] = loong.REG_FT5
+	register["FT6"] = loong.REG_FT6
+	register["FT7"] = loong.REG_FT7
+	register["FT8"] = loong.REG_FT8
+	register["FT9"] = loong.REG_FT9
+	register["FT10"] = loong.REG_FT10
+	register["FT11"] = loong.REG_FT11
+	register["FT12"] = loong.REG_FT12
+	register["FT13"] = loong.REG_FT13
+	register["FT14"] = loong.REG_FT14
+	register["FT15"] = loong.REG_FT15
+	register["FS0"] = loong.REG_FS0
+	register["FS1"] = loong.REG_FS1
+	register["FS2"] = loong.REG_FS2
+	register["FS3"] = loong.REG_FS3
+	register["FS4"] = loong.REG_FS4
+	register["FS5"] = loong.REG_FS5
+	register["FS6"] = loong.REG_FS6
+	register["FS7"] = loong.REG_FS7
+
+	// Pseudo-registers.
+	register["SB"] = RSB
+	register["FP"] = RFP
+	register["PC"] = RPC
+
+	instructions := make(map[string]obj.As)
+	for i, s := range obj.Anames {
+		instructions[s] = obj.As(i)
+	}
+	for i, s := range loong.Anames {
+		if obj.As(i) >= obj.A_ARCHSPECIFIC {
+			instructions[s] = obj.As(i) + obj.ABaseLoong
+		}
+	}
+
+	return &Arch{
+		LinkArch:       &loong.Linkloong64,
+		Instructions:   instructions,
+		Register:       register,
+		RegisterPrefix: nil,
+		RegisterNumber: nilRegisterNumber,
+		IsJump:         jumpLoong,
 	}
 }

@@ -462,3 +462,11 @@ func TestRISCVErrors(t *testing.T) {
 func TestS390XEndToEnd(t *testing.T) {
 	testEndToEnd(t, "s390x", "s390x")
 }
+
+func TestLoong64EndToEnd(t *testing.T) {
+	testEndToEnd(t, "loong64", "loong64")
+}
+
+func TestLoong64Encoder(t *testing.T) {
+	testEndToEnd(t, "loong64", "loong64enc")
+}
