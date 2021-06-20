@@ -433,6 +433,13 @@ func (p *Parser) asmJump(op obj.As, cond string, a []obj.Addr) {
 			prog.Reg = p.getRegister(prog, op, &a[1])
 			break
 		}
+		if p.arch.Family == sys.Loong64 {
+			// Same as above, but pushing second source operand into RestArgs.
+			target = &a[2]
+			prog.From = a[0]
+			prog.SetRestArgs([]obj.Addr{a[1]})
+			break
+		}
 		if p.arch.Family == sys.S390X {
 			// 3-operand jumps.
 			target = &a[2]
@@ -593,6 +600,18 @@ func (p *Parser) asmInstruction(op obj.As, cond string, a []obj.Addr) {
 				prog.Reg = p.getRegister(prog, op, &a[1])
 				break
 			}
+		} else if p.arch.Family == sys.Loong64 {
+			if arch.IsLoongBinaryDualInputs(op) {
+				prog.From = a[0]
+				prog.SetRestArgs([]obj.Addr{a[1]})
+				break
+			}
+			// Both operands are outputs.
+			if arch.IsLoongBinaryDualOutputs(op) {
+				prog.To = a[0]
+				prog.SetTo2(a[1])
+				break
+			}
 		}
 		prog.From = a[0]
 		prog.To = a[1]
@@ -715,6 +734,16 @@ func (p *Parser) asmInstruction(op obj.As, cond string, a []obj.Addr) {
 				prog.SetFrom3(a[1])
 			}
 			prog.To = a[2]
+		case sys.Loong64:
+			if arch.IsLoongTernaryAllInputs(op) {
+				// All operands are inputs.
+				prog.From = a[0]
+				prog.SetRestArgs([]obj.Addr{a[1], a[2]})
+				break
+			}
+			prog.From = a[0]
+			prog.SetRestArgs([]obj.Addr{a[1]})
+			prog.To = a[2]
 		default:
 			p.errorf("TODO: implement three-operand instructions for this architecture")
 			return
@@ -801,6 +830,12 @@ func (p *Parser) asmInstruction(op obj.As, cond string, a []obj.Addr) {
 			prog.From = a[0]
 			prog.Reg = p.getRegister(prog, op, &a[1])
 			prog.SetFrom3(a[2])
+			prog.To = a[3]
+			break
+		}
+		if p.arch.Family == sys.Loong64 {
+			prog.From = a[0]
+			prog.SetRestArgs([]obj.Addr{a[1], a[2]})
 			prog.To = a[3]
 			break
 		}

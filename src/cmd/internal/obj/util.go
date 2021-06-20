@@ -197,9 +197,11 @@ func (p *Prog) WriteInstructionString(w io.Writer) {
 	if p.To.Type != TYPE_NONE {
 		io.WriteString(w, sep)
 		WriteDconv(w, p, &p.To)
+		sep = ", "
 	}
 	if p.RegTo2 != REG_NONE {
 		fmt.Fprintf(w, "%s%v", sep, Rconv(int(p.RegTo2)))
+		sep = ", "
 	}
 	for i := range p.RestArgs {
 		if p.RestArgs[i].Pos == Destination {
@@ -507,7 +509,8 @@ const (
 	RBaseMIPS  = 13 * 1024 // range [13k, 14k)
 	RBaseS390X = 14 * 1024 // range [14k, 15k)
 	RBaseRISCV = 15 * 1024 // range [15k, 16k)
-	RBaseWasm  = 16 * 1024
+	RBaseWasm  = 16 * 1024 // range [16k, 17k)
+	RBaseLoong = 17 * 1024 // range [17k, 18k)
 )
 
 // RegisterRegister binds a pretty-printer (Rconv) for register
