@@ -163,6 +163,7 @@ var gcArchSizes = map[string]*StdSizes{
 	"arm64":    {8, 8},
 	"amd64":    {8, 8},
 	"amd64p32": {4, 8},
+	"loong64":  {8, 8},
 	"mips":     {4, 4},
 	"mipsle":   {4, 4},
 	"mips64":   {8, 8},
@@ -181,7 +182,7 @@ var gcArchSizes = map[string]*StdSizes{
 // The result is nil if a compiler/architecture pair is not known.
 //
 // Supported architectures for compiler "gc":
-// "386", "arm", "arm64", "amd64", "amd64p32", "mips", "mipsle",
+// "386", "arm", "arm64", "amd64", "amd64p32", "loong64", "mips", "mipsle",
 // "mips64", "mips64le", "ppc64", "ppc64le", "riscv64", "s390x", "sparc64", "wasm".
 func SizesFor(compiler, arch string) Sizes {
 	var m map[string]*StdSizes
