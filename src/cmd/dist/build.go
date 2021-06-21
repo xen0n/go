@@ -65,6 +65,7 @@ var okgoarch = []string{
 	"amd64",
 	"arm",
 	"arm64",
+	"loong64",
 	"mips",
 	"mipsle",
 	"mips64",
@@ -1566,6 +1567,7 @@ var cgoEnabled = map[string]bool{
 	"linux/amd64":     true,
 	"linux/arm":       true,
 	"linux/arm64":     true,
+	"linux/loong64":   false,
 	"linux/ppc64":     false,
 	"linux/ppc64le":   true,
 	"linux/mips":      true,
@@ -1604,6 +1606,7 @@ var cgoEnabled = map[string]bool{
 // List of platforms which are supported but not complete yet. These get
 // filtered out of cgoEnabled for 'dist list'. See golang.org/issue/28944
 var incomplete = map[string]bool{
+	"linux/loong64": true,
 	"linux/sparc64": true,
 }
 
