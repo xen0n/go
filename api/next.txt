@@ -1,0 +1,2 @@
+pkg debug/elf, const EM_LOONGARCH = 258
+pkg debug/elf, const EM_LOONGARCH Machine

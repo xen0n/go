@@ -384,6 +384,7 @@ const (
 	EM_RISCV         Machine = 243 /* RISC-V */
 	EM_LANAI         Machine = 244 /* Lanai 32-bit processor */
 	EM_BPF           Machine = 247 /* Linux BPF – in-kernel virtual machine */
+	EM_LOONGARCH     Machine = 258 /* LoongArch */
 
 	/* Non-standard or deprecated. */
 	EM_486         Machine = 6      /* Intel i486. */
@@ -575,6 +576,7 @@ var machineStrings = []intName{
 	{243, "EM_RISCV"},
 	{244, "EM_LANAI"},
 	{247, "EM_BPF"},
+	{258, "EM_LOONGARCH"},
 
 	/* Non-standard or deprecated. */
 	{6, "EM_486"},
