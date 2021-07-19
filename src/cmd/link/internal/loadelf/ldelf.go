@@ -381,6 +381,11 @@ func Load(l *loader.Loader, arch *sys.Arch, localSymVersion int, f *bio.Reader, 
 		if mach != elf.EM_S390 || class != elf.ELFCLASS64 {
 			return errorf("elf object but not s390x")
 		}
+
+	case sys.Loong64:
+		if e != binary.LittleEndian || mach != elf.EM_LOONGARCH || class != elf.ELFCLASS64 {
+			return errorf("elf object but not loong64")
+		}
 	}
 
 	// load section list into memory.

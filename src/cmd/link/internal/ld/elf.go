@@ -1660,6 +1660,8 @@ func asmbElf(ctxt *Link) {
 		eh.Machine = uint16(elf.EM_RISCV)
 	case sys.S390X:
 		eh.Machine = uint16(elf.EM_S390)
+	case sys.Loong64:
+		eh.Machine = uint16(elf.EM_LOONGARCH)
 	}
 
 	elfreserve := int64(ELFRESERVE)

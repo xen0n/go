@@ -101,6 +101,10 @@ func (f *elfFile) goarch() string {
 		return "arm"
 	case elf.EM_AARCH64:
 		return "arm64"
+	case elf.EM_LOONGARCH:
+		if f.elf.ByteOrder == binary.LittleEndian && f.elf.Class == elf.ELFCLASS64 {
+			return "loong64"
+		}
 	case elf.EM_PPC64:
 		if f.elf.ByteOrder == binary.LittleEndian {
 			return "ppc64le"
