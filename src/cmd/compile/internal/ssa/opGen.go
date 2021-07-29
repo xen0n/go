@@ -6,6 +6,7 @@ import (
 	"cmd/internal/obj"
 	"cmd/internal/obj/arm"
 	"cmd/internal/obj/arm64"
+	"cmd/internal/obj/loong"
 	"cmd/internal/obj/mips"
 	"cmd/internal/obj/ppc64"
 	"cmd/internal/obj/riscv"
@@ -90,6 +91,21 @@ const (
 	BlockARM64LEnoov
 	BlockARM64GTnoov
 	BlockARM64GEnoov
+
+	BlockLoong64BEQZ
+	BlockLoong64BNEZ
+	BlockLoong64BEQ
+	BlockLoong64BNE
+	BlockLoong64BLE
+	BlockLoong64BGT
+	BlockLoong64BLEU
+	BlockLoong64BGTU
+	BlockLoong64BCEQZ
+	BlockLoong64BCNEZ
+	BlockLoong64BLEZ
+	BlockLoong64BGEZ
+	BlockLoong64BLTZ
+	BlockLoong64BGTZ
 
 	BlockMIPSEQ
 	BlockMIPSNE
@@ -228,6 +244,21 @@ var blockString = [...]string{
 	BlockARM64LEnoov: "LEnoov",
 	BlockARM64GTnoov: "GTnoov",
 	BlockARM64GEnoov: "GEnoov",
+
+	BlockLoong64BEQZ:  "BEQZ",
+	BlockLoong64BNEZ:  "BNEZ",
+	BlockLoong64BEQ:   "BEQ",
+	BlockLoong64BNE:   "BNE",
+	BlockLoong64BLE:   "BLE",
+	BlockLoong64BGT:   "BGT",
+	BlockLoong64BLEU:  "BLEU",
+	BlockLoong64BGTU:  "BGTU",
+	BlockLoong64BCEQZ: "BCEQZ",
+	BlockLoong64BCNEZ: "BCNEZ",
+	BlockLoong64BLEZ:  "BLEZ",
+	BlockLoong64BGEZ:  "BGEZ",
+	BlockLoong64BLTZ:  "BLTZ",
+	BlockLoong64BGTZ:  "BGTZ",
 
 	BlockMIPSEQ:  "EQ",
 	BlockMIPSNE:  "NE",
@@ -1610,6 +1641,8 @@ const (
 	OpARM64LoweredPanicBoundsA
 	OpARM64LoweredPanicBoundsB
 	OpARM64LoweredPanicBoundsC
+
+	OpLoong64ADDD
 
 	OpMIPSADD
 	OpMIPSADDconst
@@ -21447,6 +21480,22 @@ var opcodeTable = [...]opInfo{
 	},
 
 	{
+		name:        "ADDD",
+		argLen:      2,
+		commutative: true,
+		asm:         loong.AADDD,
+		reg: regInfo{
+			inputs: []inputInfo{
+				{0, 536346616}, // R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15 R16 R17 R18 R19 R22 R23 R24 R25 R26 R27 R28 R29 R30
+				{1, 536346616}, // R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15 R16 R17 R18 R19 R22 R23 R24 R25 R26 R27 R28 R29 R30
+			},
+			outputs: []outputInfo{
+				{0, 536346616}, // R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15 R16 R17 R18 R19 R22 R23 R24 R25 R26 R27 R28 R29 R30
+			},
+		},
+	},
+
+	{
 		name:        "ADD",
 		argLen:      2,
 		commutative: true,
@@ -36407,6 +36456,78 @@ var fpRegMaskARM64 = regMask(9223372034707292160)
 var specialRegMaskARM64 = regMask(0)
 var framepointerRegARM64 = int8(-1)
 var linkRegARM64 = int8(29)
+var registersLoong64 = [...]Register{
+	{0, loong.REG_R0, -1, "R0"},
+	{1, loong.REG_R2, -1, "R2"},
+	{2, loong.REGSP, -1, "SP"},
+	{3, loong.REG_R4, 0, "R4"},
+	{4, loong.REG_R5, 1, "R5"},
+	{5, loong.REG_R6, 2, "R6"},
+	{6, loong.REG_R7, 3, "R7"},
+	{7, loong.REG_R8, 4, "R8"},
+	{8, loong.REG_R9, 5, "R9"},
+	{9, loong.REG_R10, 6, "R10"},
+	{10, loong.REG_R11, 7, "R11"},
+	{11, loong.REG_R12, 8, "R12"},
+	{12, loong.REG_R13, 9, "R13"},
+	{13, loong.REG_R14, 10, "R14"},
+	{14, loong.REG_R15, 11, "R15"},
+	{15, loong.REG_R16, 12, "R16"},
+	{16, loong.REG_R17, 13, "R17"},
+	{17, loong.REG_R18, 14, "R18"},
+	{18, loong.REG_R19, 15, "R19"},
+	{19, loong.REG_R20, -1, "R20"},
+	{20, loong.REG_R22, 16, "R22"},
+	{21, loong.REG_R23, 17, "R23"},
+	{22, loong.REG_R24, 18, "R24"},
+	{23, loong.REG_R25, 19, "R25"},
+	{24, loong.REG_R26, 20, "R26"},
+	{25, loong.REG_R27, 21, "R27"},
+	{26, loong.REG_R28, 22, "R28"},
+	{27, loong.REG_R29, 23, "R29"},
+	{28, loong.REG_R30, 24, "R30"},
+	{29, loong.REGG, -1, "g"},
+	{30, loong.REG_F0, -1, "F0"},
+	{31, loong.REG_F1, -1, "F1"},
+	{32, loong.REG_F2, -1, "F2"},
+	{33, loong.REG_F3, -1, "F3"},
+	{34, loong.REG_F4, -1, "F4"},
+	{35, loong.REG_F5, -1, "F5"},
+	{36, loong.REG_F6, -1, "F6"},
+	{37, loong.REG_F7, -1, "F7"},
+	{38, loong.REG_F8, -1, "F8"},
+	{39, loong.REG_F9, -1, "F9"},
+	{40, loong.REG_F10, -1, "F10"},
+	{41, loong.REG_F11, -1, "F11"},
+	{42, loong.REG_F12, -1, "F12"},
+	{43, loong.REG_F13, -1, "F13"},
+	{44, loong.REG_F14, -1, "F14"},
+	{45, loong.REG_F15, -1, "F15"},
+	{46, loong.REG_F16, -1, "F16"},
+	{47, loong.REG_F17, -1, "F17"},
+	{48, loong.REG_F18, -1, "F18"},
+	{49, loong.REG_F19, -1, "F19"},
+	{50, loong.REG_F20, -1, "F20"},
+	{51, loong.REG_F21, -1, "F21"},
+	{52, loong.REG_F22, -1, "F22"},
+	{53, loong.REG_F23, -1, "F23"},
+	{54, loong.REG_F24, -1, "F24"},
+	{55, loong.REG_F25, -1, "F25"},
+	{56, loong.REG_F26, -1, "F26"},
+	{57, loong.REG_F27, -1, "F27"},
+	{58, loong.REG_F28, -1, "F28"},
+	{59, loong.REG_F29, -1, "F29"},
+	{60, loong.REG_F30, -1, "F30"},
+	{61, loong.REG_F31, -1, "F31"},
+	{62, 0, -1, "SB"},
+}
+var paramIntRegLoong64 = []int8(nil)
+var paramFloatRegLoong64 = []int8(nil)
+var gpRegMaskLoong64 = regMask(536346616)
+var fpRegMaskLoong64 = regMask(4611686017353646080)
+var specialRegMaskLoong64 = regMask(0)
+var framepointerRegLoong64 = int8(-1)
+var linkRegLoong64 = int8(0)
 var registersMIPS = [...]Register{
 	{0, mips.REG_R0, -1, "R0"},
 	{1, mips.REG_R1, 0, "R1"},
