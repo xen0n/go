@@ -80,6 +80,20 @@ func preprocess(ctxt *obj.Link, cursym *obj.LSym, newprog obj.ProgAlloc) {
 
 	// TODO: Implement.
 
+	// Rewrite MOV pseudo-instructions. This cannot be done in
+	// progedit, as SP offsets need to be applied before we split
+	// up some of the Addrs.
+	for p := cursym.Func().Text; p != nil; p = p.Link {
+		switch p.As {
+		case AMOV, AMOVB, AMOVBU, AMOVH, AMOVHU, AMOVW, AMOVWU,
+			// These two are actually real instructions, but allow
+			// passing a memory operand for these to act as
+			// syntactic sugar for FLD/FST.
+			AFMOVS, AFMOVD:
+			rewriteMOV(ctxt, newprog, p)
+		}
+	}
+
 	setPCs(cursym.Func().Text, 0)
 
 	// Validate all instructions - this provides nice error messages.

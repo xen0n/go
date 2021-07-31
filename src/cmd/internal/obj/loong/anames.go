@@ -378,5 +378,12 @@ var Anames = []string{
 	"BGTU",
 	"BLEU",
 	"WORD",
+	"MOV",
+	"MOVB",
+	"MOVBU",
+	"MOVH",
+	"MOVHU",
+	"MOVW",
+	"MOVWU",
 	"LAST",
 }

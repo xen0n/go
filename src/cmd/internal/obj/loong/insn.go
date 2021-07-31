@@ -41,7 +41,7 @@ func isDirectiveInsn(as obj.As) bool {
 
 func isPseudoInsn(as obj.As) bool {
 	switch as {
-	case AWORD:
+	case AWORD, AMOV, AMOVB, AMOVBU, AMOVH, AMOVHU, AMOVW, AMOVWU:
 		return true
 	}
 	return false
@@ -76,6 +76,11 @@ func (insn *instruction) validate(ctxt *obj.Link) {
 					insn.imm1,
 				)
 			}
+			return
+
+		default:
+			// Other pseudo-instructions should not exist at this point.
+			ctxt.Diag("%v\tnon-rewritten pseudo-instruction", insn.as)
 			return
 		}
 	}
