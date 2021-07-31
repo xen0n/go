@@ -322,8 +322,9 @@ var (
 	debug_s bool // backup old value of debug['s']
 	HEADR   int32
 
-	nerrors  int
-	liveness int64
+	nerrors   int
+	keepGoing bool
+	liveness  int64
 
 	// See -strictdups command line flag.
 	checkStrictDups   int // 0=off 1=warning 2=error
@@ -414,7 +415,9 @@ func libinit(ctxt *Link) {
 
 func exitIfErrors() {
 	if nerrors != 0 || checkStrictDups > 1 && strictDupMsgCount > 0 {
-		mayberemoveoutfile()
+		if !keepGoing {
+			mayberemoveoutfile()
+		}
 		Exit(2)
 	}
 

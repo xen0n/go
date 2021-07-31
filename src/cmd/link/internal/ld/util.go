@@ -34,6 +34,9 @@ func Exit(code int) {
 // Exitf logs an error message then calls Exit(2).
 func Exitf(format string, a ...interface{}) {
 	fmt.Fprintf(os.Stderr, os.Args[0]+": "+format+"\n", a...)
+	if keepGoing {
+		return
+	}
 	nerrors++
 	Exit(2)
 }
