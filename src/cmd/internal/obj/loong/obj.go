@@ -24,6 +24,8 @@ func instinit(ctxt *obj.Link) {}
 // progedit is called individually for each *obj.Prog. It normalizes instruction
 // formats and eliminates as many pseudo-instructions as possible.
 func progedit(ctxt *obj.Link, p *obj.Prog, newprog obj.ProgAlloc) {
+	canonicalizeInsnArityForProg(p)
+
 	// TODO: Implement.
 }
 
