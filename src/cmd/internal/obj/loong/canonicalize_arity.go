@@ -12,8 +12,8 @@ import (
 // with one less operand than its expected arity, by duplicating the
 // destination reg as source reg.
 func canonicalizeInsnArityForProg(p *obj.Prog) {
-	if isDirectiveInsn(p.As) || p.As == AWORD {
-		// Directives are out-of-scope.
+	if isDirectiveInsn(p.As) || isPseudoInsn(p.As) {
+		// Directives and pseudo-instructions are out-of-scope.
 		return
 	}
 

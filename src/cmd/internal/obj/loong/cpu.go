@@ -618,6 +618,18 @@ const (
 	// The escape hatch. Inserts a single 32-bit word.
 	AWORD
 
+	// Pseudo-instructions.
+	// Please keep the list alphabetically sorted.
+
+	// Moves; MOV is the native-width move.
+	AMOV
+	AMOVB
+	AMOVBU
+	AMOVH
+	AMOVHU
+	AMOVW
+	AMOVWU
+
 	// End marker
 	ALAST
 )
