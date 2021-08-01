@@ -54,6 +54,19 @@ start:
 	FMOVD	F1, (R4)				// 8100c02b
 	FMOVD	F1, 233(R4)				// 81a4c32b
 
+	// Constant loads.
+	MOV	$0, R4					// 04008002
+	MOV	$1, R4					// 04048002
+	MOV	$-1, R4					// 04fcbf02
+	MOV	$2047, R4				// 04fc9f02
+	MOV	$-2048, R4				// 0400a002
+	MOV	$2048, R4				// 04000014;8400a003
+	MOV	$2147483647, R4				// e4ffff14;84fcbf03
+	MOV	$-2147483648, R4			// 04000015
+	MOV	$4294967295, R4				// e4ffff15;84fcbf03;04000016
+	MOV	$1311768467463790320, R4		// a4793515;84c0bb03;04cf8a16;848c0403
+	MOV	$-81985529216486896, R4			// 64a8ec14;84408803;04539717;84b43f03
+
 	// Simple register-to-register moves.
 	MOV	R9, R10					// 2a011500
 	MOVBU	R13, R14				// aefd4303

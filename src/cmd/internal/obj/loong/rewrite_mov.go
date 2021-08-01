@@ -137,8 +137,14 @@ func rewriteMOV(ctxt *obj.Link, newprog obj.ProgAlloc, p *obj.Prog) {
 		}
 
 	case obj.TYPE_CONST:
-		// TODO: Implement.
-		ctxt.Diag("TODO")
+		if p.As != AMOV {
+			ctxt.Diag("%v: constant load must use MOV", p)
+		}
+		if p.To.Type != obj.TYPE_REG {
+			ctxt.Diag("%v: constant load must target register", p)
+		}
+
+		materializeSImm(newprog, p, p.From.Offset, p.To.Reg, true)
 
 	case obj.TYPE_ADDR: // MOV $sym+off(SP/SB), R
 		// TODO: Implement.
