@@ -1022,6 +1022,19 @@ The value of <code>GOMIPS64</code> environment variable (<code>hardfloat</code> 
 <code>GOMIPS64_hardfloat</code> or <code>GOMIPS64_softfloat</code>.
 </p>
 
+<h3 id="loong">LoongArch</h3>
+
+<p>
+This assembler is used by the <code>GOARCH</code> <code>loong64</code>.
+As the <code>GOARCH</code> value suggests, currently it assumes 64-bit operation
+(<code>GRLEN=64</code> in official manual parlance), and will happily generate
+LA64-only instructions for native-width operations.
+</p>
+
+<p>
+Reference: <a href="/pkg/cmd/internal/obj/loong">Go LoongArch Assembly Instructions Reference Manual</a>
+</p>
+
 <h3 id="unsupported_opcodes">Unsupported opcodes</h3>
 
 <p>
