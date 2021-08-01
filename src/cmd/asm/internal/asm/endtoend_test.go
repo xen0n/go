@@ -58,7 +58,8 @@ func testEndToEnd(t *testing.T, goarch, file string) {
 	}
 	lineno := 0
 	seq := 0
-	hexByLine := map[string]string{}
+	lineHasHexes := map[string]bool{}
+	hexByLine := map[string][]string{}
 	lines := strings.SplitAfter(string(data), "\n")
 Diff:
 	for _, line := range lines {
@@ -103,7 +104,9 @@ Diff:
 		}
 
 		if hexes != "" {
-			hexByLine[fmt.Sprintf("%s:%d", input, lineno)] = hexes
+			key := fmt.Sprintf("%s:%d", input, lineno)
+			lineHasHexes[key] = true
+			hexByLine[key] = strings.Split(hexes, ";")
 		}
 
 		// Canonicalize spacing in printed form.
@@ -193,11 +196,34 @@ Diff:
 		if p.As == obj.ATEXT {
 			text = p.From.Sym
 		}
-		hexes := hexByLine[p.Line()]
-		if hexes == "" {
+
+		if p.As == obj.APCDATA {
 			continue
 		}
-		delete(hexByLine, p.Line())
+
+		if !lineHasHexes[p.Line()] {
+			continue
+		}
+
+		if len(hexByLine[p.Line()]) == 0 {
+			// This input line expands to multiple instructions,
+			// but not every output instruction has its expected
+			// encoding specified.
+			//
+			// However, due to implementation details, the last
+			// instruction line often has a lot of extra baggages
+			// associated with it, and it's hard to elegantly
+			// ignore them. For now just skip and don't fail the
+			// test.
+			//
+			// t.Errorf("%s: not all expanded instructions from this input line have hex specified", p)
+			continue
+		}
+
+		// Consume the first remaining hex for this line.
+		hexes := hexByLine[p.Line()][0]
+		hexByLine[p.Line()] = hexByLine[p.Line()][1:]
+
 		if text == nil {
 			t.Errorf("%s: instruction outside TEXT", p)
 		}
@@ -231,13 +257,22 @@ Diff:
 	}
 
 	if len(hexByLine) > 0 {
-		var missing []string
-		for key := range hexByLine {
-			missing = append(missing, key)
+		type missingLine struct {
+			key  string
+			encs []string
 		}
-		sort.Strings(missing)
+
+		var missing []missingLine
+		for key, encs := range hexByLine {
+			missing = append(missing, missingLine{key, encs})
+		}
+		sort.Slice(missing, func(i, j int) bool {
+			return missing[i].key < missing[j].key
+		})
 		for _, line := range missing {
-			t.Errorf("%s: did not find instruction encoding", line)
+			for _, enc := range line.encs {
+				t.Errorf("%s: did not find instruction encoding \"%s\"", line.key, enc)
+			}
 		}
 	}
 
@@ -247,12 +282,14 @@ func isHexes(s string) bool {
 	if s == "" {
 		return false
 	}
-	if s == "empty" {
-		return true
-	}
-	for _, f := range strings.Split(s, " or ") {
-		if f == "" || len(f)%2 != 0 || strings.TrimLeft(f, "0123456789abcdef") != "" {
-			return false
+	for _, enc := range strings.Split(s, ";") {
+		for _, f := range strings.Split(enc, " or ") {
+			if f == "empty" {
+				continue
+			}
+			if f == "" || len(f)%2 != 0 || strings.TrimLeft(f, "0123456789abcdef") != "" {
+				return false
+			}
 		}
 	}
 	return true
