@@ -633,6 +633,54 @@ modifying or saving the FPCR.
 Functions are allowed to modify it between calls (as long as they
 restore it), but as of this writing Go code never does.
 
+### loong64 architecture TODO
+
+The loong64 architecture uses R4 – R18 and R23 for integer arguments and results,
+and F0 – F15 for floating-point arguments and results.
+
+Special-purpose registers used within Go generated code and Go
+assembly code are as follows:
+
+| Register | Call meaning | Return meaning | Body meaning |
+| --- | --- | --- | --- |
+| R0  | Zero value | Same | Same |
+| R1  | Link register | Link register | Scratch |
+| R2  | TLS (thread pointer) | TLS | Scratch |
+| R3  | Stack pointer | Same | Same |
+| R19,R20 | Scratch | Scratch | Used by duffcopy, duffzero |
+| R21 | Reserved (not used) | Same | Same |
+| R29 | Closure context pointer | Scratch | Scratch |
+| R30 | Scratch | Scratch | Scratch |
+| R31 | Current goroutine | Same | Same |
+
+*Rationale*: These register meanings are compatible with Go’s
+stack-based calling convention. Context register X20 will change to X26,
+duffcopy, duffzero register will change to X24, X25 before this register ABI been adopted.
+X10 – X17, X8, X9, X18 – X23, is the same order as A0 – A7, S0 – S7 in platform ABI.
+F10 – F17, F8, F9, F18 – F23, is the same order as FA0 – FA7, FS0 – FS7 in platform ABI.
+
+#### Stack layout
+
+The stack pointer, R3, grows down and is aligned to 16 bytes.
+
+A function's stack frame, after the frame is created, is laid out as
+follows:
+
+    +------------------------------+
+    | ... locals ...               |
+    | ... outgoing arguments ...   |
+    | return PC                    | ← R3 points to
+    +------------------------------+ ↓ lower addresses
+
+The "return PC" is loaded to the link register, R1, as part of the
+loong64 `CALL` operation.
+
+#### Flags
+
+The riscv64 has Zicsr extension for control and status register (CSR) and
+treated as scratch register.
+All bits in CSR are system flags and are not modified by Go.
+
 ### ppc64 architecture
 
 The ppc64 architecture uses R3 – R10 and R14 – R17 for integer arguments
