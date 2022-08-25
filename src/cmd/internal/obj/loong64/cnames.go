@@ -8,7 +8,6 @@ var cnames0 = []string{
 	"NONE",
 	"REG",
 	"FREG",
-	"FCREG",
 	"FCSRREG",
 	"FCCREG",
 	"ZCON",
@@ -37,7 +36,8 @@ var cnames0 = []string{
 	"LOREG",
 	"GOK",
 	"ADDR",
-	"TLS",
+	"TLS_LE",
+	"TLS_IE",
 	"TEXTSIZE",
 	"NCLASS",
 }
