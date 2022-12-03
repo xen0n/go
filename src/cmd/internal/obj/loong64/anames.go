@@ -34,7 +34,6 @@ var Anames = []string{
 	"LU32ID",
 	"LU52ID",
 	"PCALAU12I",
-	"PCADDU12I",
 	"JIRL",
 	"BGE",
 	"BLT",
