@@ -1875,8 +1875,6 @@ func (c *ctxt0) opir(a obj.As) uint32 {
 		return 0x0b << 25
 	case APCALAU12I:
 		return 0x0d << 25
-	case APCADDU12I:
-		return 0x0e << 25
 	}
 	return 0
 }
