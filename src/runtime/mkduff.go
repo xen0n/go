@@ -181,7 +181,7 @@ func zeroLOONG64(w io.Writer) {
 	// R0: always zero
 	// R19 (aka REGRT1): ptr to memory to be zeroed - 8
 	// On return, R19 points to the last zeroed dword.
-	fmt.Fprintln(w, "TEXT runtime·duffzero(SB), NOSPLIT|NOFRAME, $0-0")
+	fmt.Fprintln(w, "TEXT runtime·duffzero<ABIInternal>(SB), NOSPLIT|NOFRAME, $0-0")
 	for i := 0; i < 128; i++ {
 		fmt.Fprintln(w, "\tMOVV\tR0, 8(R19)")
 		fmt.Fprintln(w, "\tADDV\t$8, R19")
@@ -190,7 +190,7 @@ func zeroLOONG64(w io.Writer) {
 }
 
 func copyLOONG64(w io.Writer) {
-	fmt.Fprintln(w, "TEXT runtime·duffcopy(SB), NOSPLIT|NOFRAME, $0-0")
+	fmt.Fprintln(w, "TEXT runtime·duffcopy<ABIInternal>(SB), NOSPLIT|NOFRAME, $0-0")
 	for i := 0; i < 128; i++ {
 		fmt.Fprintln(w, "\tMOVV\t(R19), R30")
 		fmt.Fprintln(w, "\tADDV\t$8, R19")
