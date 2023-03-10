@@ -65,6 +65,8 @@ func ParseGOEXPERIMENT(goos, goarch, goexp string) (*ExperimentFlags, error) {
 	case "amd64", "arm64", "ppc64le", "ppc64", "riscv64":
 		regabiAlwaysOn = true
 		regabiSupported = true
+	case "loong64":
+		regabiSupported = true
 	}
 
 	baseline := goexperiment.Flags{
