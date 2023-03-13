@@ -162,8 +162,8 @@ const (
 	REGRT1  = REG_R19 // reserved for runtime, duffzero and duffcopy
 	REGRT2  = REG_R20 // reserved for runtime, duffcopy
 	REGCTXT = REG_R29 // context for closures
-	REGG    = REG_R22 // G in loong64
 	REGTMP  = REG_R30 // used by the assembler
+	REGG    = REG_R31 // G in loong64
 	FREGRET = REG_F0
 )
 

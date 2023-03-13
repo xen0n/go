@@ -50,7 +50,7 @@ var regNamesLOONG64 = []string{
 	"R19",
 	"R20",
 	"R21",
-	"g", // aka R22
+	"R22",
 	"R23",
 	"R24",
 	"R25",
@@ -59,7 +59,7 @@ var regNamesLOONG64 = []string{
 	"R28",
 	"R29",
 	// R30 is REGTMP not used in regalloc
-	"R31",
+	"g", // aka R31
 
 	"F0",
 	"F1",
@@ -123,8 +123,8 @@ func init() {
 
 	// Common individual register masks
 	var (
-		gp         = buildReg("R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15 R16 R17 R18 R19 R20 R23 R24 R25 R26 R27 R28 R29 R31") // R1 is LR, R2 is thread pointer, R3 is stack pointer, R21-unused, R22 is g, R30 is REGTMP
-		gps        = buildReg("R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15 R16 R19 R20 R23 R24 R25 R26 R27 R28 R29 R31") | buildReg("g")
+		gp         = buildReg("R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15 R16 R17 R18 R19 R20 R22 R23 R24 R25 R26 R27 R28 R29") // R1 is LR, R2 is thread pointer, R3 is stack pointer, R21-unused, R30 is REGTMP, R31 is g
+		gps        = buildReg("R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15 R16 R19 R20 R22 R23 R24 R25 R26 R27 R28 R29") | buildReg("g")
 		gpg        = gp | buildReg("g")
 		gpsp       = gp | buildReg("SP")
 		gpspg      = gpg | buildReg("SP")
@@ -430,7 +430,7 @@ func init() {
 
 		// Scheduler ensures LoweredGetClosurePtr occurs only in entry block,
 		// and sorts it to the very beginning of the block to prevent other
-		// use of R22 (loong64.REGCTXT, the closure pointer)
+		// use of R29 (loong64.REGCTXT, the closure pointer)
 		{name: "LoweredGetClosurePtr", reg: regInfo{outputs: []regMask{buildReg("R29")}}, zeroWidth: true},
 
 		// LoweredGetCallerSP returns the SP of the caller of the current function. arg0=mem.
