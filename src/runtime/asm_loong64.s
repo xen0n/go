@@ -597,7 +597,7 @@ TEXT runtime·return0(SB), NOSPLIT, $0
 // Called from cgo wrappers, this function returns g->m->curg.stack.hi.
 // Must obey the gcc calling convention.
 TEXT _cgo_topofstack(SB),NOSPLIT,$16
-	// g (R22) and REGTMP (R30)  might be clobbered by load_g. They
+	// REGTMP (R30) and g (R31) might be clobbered by load_g. They
 	// are callee-save in the gcc calling convention, so save them.
 	MOVV	R30, savedREGTMP-16(SP)
 	MOVV	g, savedG-8(SP)
@@ -681,16 +681,16 @@ flush:
 	// R19 already saved
 	MOVV	R20, 144(R3)
 	MOVV	R21, 152(R3)
-	// R22 is g.
-	MOVV	R23, 160(R3)
-	MOVV	R24, 168(R3)
-	MOVV	R25, 176(R3)
-	MOVV	R26, 184(R3)
+	MOVV	R22, 160(R3)
+	MOVV	R23, 168(R3)
+	MOVV	R24, 176(R3)
+	MOVV	R25, 184(R3)
+	MOVV	R26, 192(R3)
 	// R27 already saved
-	// R28 already saved.
-	MOVV	R29, 192(R3)
+	// R28 already saved
+	MOVV	R29, 200(R3)
 	// R30 is tmp register.
-	MOVV	R31, 200(R3)
+	// R31 is g.
 
 	CALL	runtime·wbBufFlush(SB)
 
@@ -713,12 +713,12 @@ flush:
 	MOVV	136(R3), R18
 	MOVV	144(R3), R20
 	MOVV	152(R3), R21
-	MOVV	160(R3), R23
-	MOVV	168(R3), R24
-	MOVV	176(R3), R25
-	MOVV	184(R3), R26
-	MOVV	192(R3), R29
-	MOVV	200(R3), R31
+	MOVV	160(R3), R22
+	MOVV	168(R3), R23
+	MOVV	176(R3), R24
+	MOVV	184(R3), R25
+	MOVV	192(R3), R26
+	MOVV	200(R3), R29
 	JMP	retry
 
 TEXT runtime·gcWriteBarrier1<ABIInternal>(SB),NOSPLIT,$0

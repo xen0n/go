@@ -64,7 +64,6 @@ func (c *sigctxt) sigcode() uint32 { return uint32(c.info.si_code) }
 func (c *sigctxt) sigaddr() uint64 { return c.info.si_addr }
 
 func (c *sigctxt) set_r31(x uint64)  { c.regs().sc_regs[31] = x }
-func (c *sigctxt) set_r22(x uint64)  { c.regs().sc_regs[22] = x }
 func (c *sigctxt) set_pc(x uint64)   { c.regs().sc_pc = x }
 func (c *sigctxt) set_sp(x uint64)   { c.regs().sc_regs[3] = x }
 func (c *sigctxt) set_link(x uint64) { c.regs().sc_regs[1] = x }
