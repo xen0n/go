@@ -615,8 +615,8 @@ func (c *ctxt0) stacksplit(p *obj.Prog, framesize int32) *obj.Prog {
 			// stack guard to incorrectly succeed. We explicitly
 			// guard against underflow.
 			//
-			//      SGTU    $(framesize-StackSmall), SP, R4
-			//      BNE     R4, label-of-call-to-morestack
+			//      SGTU    $(framesize-StackSmall), SP, R20
+			//      BNE     R20, label-of-call-to-morestack
 
 			p = obj.Appendp(p, c.newprog)
 			p.As = ASGTU
@@ -624,13 +624,13 @@ func (c *ctxt0) stacksplit(p *obj.Prog, framesize int32) *obj.Prog {
 			p.From.Offset = offset
 			p.Reg = REGSP
 			p.To.Type = obj.TYPE_REG
-			p.To.Reg = REG_R4
+			p.To.Reg = REG_R20
 
 			p = obj.Appendp(p, c.newprog)
 			q = p
 			p.As = ABNE
 			p.From.Type = obj.TYPE_REG
-			p.From.Reg = REG_R4
+			p.From.Reg = REG_R20
 			p.To.Type = obj.TYPE_BRANCH
 			p.Mark |= BRANCH
 		}
@@ -642,12 +642,12 @@ func (c *ctxt0) stacksplit(p *obj.Prog, framesize int32) *obj.Prog {
 		p.From.Offset = -offset
 		p.Reg = REGSP
 		p.To.Type = obj.TYPE_REG
-		p.To.Reg = REG_R4
+		p.To.Reg = REG_R20
 
 		p = obj.Appendp(p, c.newprog)
 		p.As = ASGTU
 		p.From.Type = obj.TYPE_REG
-		p.From.Reg = REG_R4
+		p.From.Reg = REG_R20
 		p.Reg = REG_R19
 		p.To.Type = obj.TYPE_REG
 		p.To.Reg = REG_R19
@@ -663,14 +663,14 @@ func (c *ctxt0) stacksplit(p *obj.Prog, framesize int32) *obj.Prog {
 	p.To.Type = obj.TYPE_BRANCH
 	p.Mark |= BRANCH
 
-	// MOV	LINK, R5
+	// MOV	LINK, TMP
 	p = obj.Appendp(p, c.newprog)
 
 	p.As = mov
 	p.From.Type = obj.TYPE_REG
 	p.From.Reg = REGLINK
 	p.To.Type = obj.TYPE_REG
-	p.To.Reg = REG_R5
+	p.To.Reg = REG_R30
 	if q != nil {
 		q.To.SetTarget(p)
 		p.Mark |= LABEL
