@@ -77,7 +77,7 @@ func (c *sigctxt) preparePanic(sig uint32, gp *g) {
 	}
 
 	// In case we are panicking from external C code
-	c.set_r22(uint64(uintptr(unsafe.Pointer(gp))))
+	c.set_r31(uint64(uintptr(unsafe.Pointer(gp))))
 	c.set_pc(uint64(abi.FuncPCABIInternal(sigpanic)))
 }
 

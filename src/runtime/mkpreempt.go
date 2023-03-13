@@ -464,13 +464,11 @@ func genLoong64() {
 	sub := "SUBV"
 	regsize := 8
 
-	// Add integer registers r4-r21 r23-r29 r31
-	// R0 (zero), R30 (REGTMP), R2 (tp), R3 (SP), R22 (g), R1 (LR) are special,
+	// Add integer registers r4-r29
+	// R0 (zero), R1 (LR), R2 (tp), R3 (SP), R30 (REGTMP) and R31 (g) are
+	// special and not saved here.
 	var l = layout{sp: "R3", stack: regsize} // add slot to save PC of interrupted instruction (in LR)
-	for i := 4; i <= 31; i++ {
-		if i == 22 || i == 30 {
-			continue
-		}
+	for i := 4; i <= 29; i++ {
 		reg := fmt.Sprintf("R%d", i)
 		l.add(mov, reg, regsize)
 	}

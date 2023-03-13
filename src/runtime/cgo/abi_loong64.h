@@ -13,10 +13,10 @@
 // SAVE_F24_TO_F31(offset) saves F24 ~ F31 to the stack space
 // of ((offset)+0*8)(R3) ~ ((offset)+7*8)(R3).
 //
-// Note: g is R22
+// Note: g is R31
 
 #define SAVE_R22_TO_R31(offset)	\
-	MOVV	g,   ((offset)+(0*8))(R3)	\
+	MOVV	R22, ((offset)+(0*8))(R3)	\
 	MOVV	R23, ((offset)+(1*8))(R3)	\
 	MOVV	R24, ((offset)+(2*8))(R3)	\
 	MOVV	R25, ((offset)+(3*8))(R3)	\
@@ -25,7 +25,7 @@
 	MOVV	R28, ((offset)+(6*8))(R3)	\
 	MOVV	R29, ((offset)+(7*8))(R3)	\
 	MOVV	R30, ((offset)+(8*8))(R3)	\
-	MOVV	R31, ((offset)+(9*8))(R3)
+	MOVV	g,   ((offset)+(9*8))(R3)
 
 #define SAVE_F24_TO_F31(offset)	\
 	MOVD	F24, ((offset)+(0*8))(R3)	\
@@ -38,7 +38,7 @@
 	MOVD	F31, ((offset)+(7*8))(R3)
 
 #define RESTORE_R22_TO_R31(offset)	\
-	MOVV	((offset)+(0*8))(R3),  g	\
+	MOVV	((offset)+(0*8))(R3), R22	\
 	MOVV	((offset)+(1*8))(R3), R23	\
 	MOVV	((offset)+(2*8))(R3), R24	\
 	MOVV	((offset)+(3*8))(R3), R25	\
@@ -47,7 +47,7 @@
 	MOVV	((offset)+(6*8))(R3), R28	\
 	MOVV	((offset)+(7*8))(R3), R29	\
 	MOVV	((offset)+(8*8))(R3), R30	\
-	MOVV	((offset)+(9*8))(R3), R31
+	MOVV	((offset)+(9*8))(R3), g
 
 #define RESTORE_F24_TO_F31(offset)	\
 	MOVD	((offset)+(0*8))(R3), F24	\

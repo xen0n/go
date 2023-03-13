@@ -748,7 +748,7 @@ func ssaGenValue(s *ssagen.State, v *ssa.Value) {
 		p4 := s.Prog(obj.ANOP) // not a machine instruction, for branch to land
 		p2.To.SetTarget(p4)
 	case ssa.OpLOONG64LoweredGetClosurePtr:
-		// Closure pointer is R22 (loong64.REGCTXT).
+		// Closure pointer is R29 (loong64.REGCTXT).
 		ssagen.CheckLoweredGetClosurePtr(v)
 	case ssa.OpLOONG64LoweredGetCallerSP:
 		// caller's SP is FixedFrameSize below the address of the first arg
