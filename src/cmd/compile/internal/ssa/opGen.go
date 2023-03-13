@@ -24270,11 +24270,11 @@ var opcodeTable = [...]opInfo{
 		faultOnNilArg1: true,
 		reg: regInfo{
 			inputs: []inputInfo{
-				{0, 8},         // R4
+				{0, 524288},    // R20
 				{1, 262144},    // R19
 				{2, 535822328}, // R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15 R16 R17 R18 R19 R20 R22 R23 R24 R25 R26 R27 R28 R29
 			},
-			clobbers: 262152, // R4 R19
+			clobbers: 786432, // R19 R20
 		},
 	},
 	{
@@ -24590,8 +24590,8 @@ var opcodeTable = [...]opInfo{
 		call:    true,
 		reg: regInfo{
 			inputs: []inputInfo{
-				{0, 65536}, // R17
-				{1, 8},     // R4
+				{0, 8388608},  // R24
+				{1, 16777216}, // R25
 			},
 		},
 	},
@@ -24602,8 +24602,8 @@ var opcodeTable = [...]opInfo{
 		call:    true,
 		reg: regInfo{
 			inputs: []inputInfo{
-				{0, 131072}, // R18
-				{1, 65536},  // R17
+				{0, 524288},  // R20
+				{1, 8388608}, // R24
 			},
 		},
 	},
@@ -24615,7 +24615,7 @@ var opcodeTable = [...]opInfo{
 		reg: regInfo{
 			inputs: []inputInfo{
 				{0, 262144}, // R19
-				{1, 131072}, // R18
+				{1, 524288}, // R20
 			},
 		},
 	},
