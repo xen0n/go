@@ -430,9 +430,9 @@ func ssaGenValue(s *ssagen.State, v *ssa.Value) {
 	case ssa.OpLOONG64LoweredMove:
 		// SUBV	$8, R19
 		// MOVV	8(R19), Rtmp
-		// MOVV	Rtmp, (R4)
+		// MOVV	Rtmp, (R20)
 		// ADDV	$8, R19
-		// ADDV	$8, R4
+		// ADDV	$8, R20
 		// BNE	Rarg2, R19, -4(PC)
 		// arg2 is the address of the last element of src
 		var sz int64
@@ -466,7 +466,7 @@ func ssaGenValue(s *ssagen.State, v *ssa.Value) {
 		p3.From.Type = obj.TYPE_REG
 		p3.From.Reg = loong64.REGTMP
 		p3.To.Type = obj.TYPE_MEM
-		p3.To.Reg = loong64.REG_R4
+		p3.To.Reg = loong64.REG_R20
 		p4 := s.Prog(loong64.AADDVU)
 		p4.From.Type = obj.TYPE_CONST
 		p4.From.Offset = sz
@@ -476,7 +476,7 @@ func ssaGenValue(s *ssagen.State, v *ssa.Value) {
 		p5.From.Type = obj.TYPE_CONST
 		p5.From.Offset = sz
 		p5.To.Type = obj.TYPE_REG
-		p5.To.Reg = loong64.REG_R4
+		p5.To.Reg = loong64.REG_R20
 		p6 := s.Prog(loong64.ABNE)
 		p6.From.Type = obj.TYPE_REG
 		p6.From.Reg = v.Args[2].Reg()
