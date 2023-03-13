@@ -72,7 +72,7 @@ nocgo:
 	MOVV	R0, 1(R0)
 	RET
 
-DATA	runtime·mainPC+0(SB)/8,$runtime·main<ABIInternal>(SB)
+DATA	runtime·mainPC+0(SB)/8,$runtime·main(SB)
 GLOBL	runtime·mainPC(SB),RODATA,$8
 
 TEXT runtime·breakpoint(SB),NOSPLIT|NOFRAME,$0-0
@@ -123,7 +123,7 @@ TEXT gogo<>(SB), NOSPLIT|NOFRAME, $0
 // Switch to m->g0's stack, call fn(g).
 // Fn must never return. It should gogo(&g->sched)
 // to keep running g.
-TEXT runtime·mcall<ABIInternal>(SB), NOSPLIT|NOFRAME, $0-8
+TEXT runtime·mcall(SB), NOSPLIT|NOFRAME, $0-8
 	// Save caller state in g->sched
 	MOVV	R3, (g_sched+gobuf_sp)(g)
 	MOVV	R1, (g_sched+gobuf_pc)(g)
@@ -136,11 +136,7 @@ TEXT runtime·mcall<ABIInternal>(SB), NOSPLIT|NOFRAME, $0-8
 	JAL	runtime·save_g(SB)
 	BNE	g, R19, 2(PC)
 	JMP	runtime·badmcall(SB)
-#ifdef GOEXPERIMENT_regabiargs
-	MOVV	R4, REGCTXT			// context
-#else
 	MOVV	fn+0(FP), REGCTXT			// context
-#endif
 	MOVV	0(REGCTXT), R5			// code pointer
 	MOVV	(g_sched+gobuf_sp)(g), R3	// sp = m->g0->sched.sp
 	ADDV	$-16, R3
