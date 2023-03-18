@@ -139,6 +139,7 @@ func fma(x, y, z float64) float64 {
 	// amd64:"VFMADD231SD"
 	// arm/6:"FMULAD"
 	// arm64:"FMADDD"
+	// loong64: "FMADDD"
 	// s390x:"FMADD"
 	// ppc64:"FMADD"
 	// ppc64le:"FMADD"
@@ -147,16 +148,19 @@ func fma(x, y, z float64) float64 {
 }
 
 func fms(x, y, z float64) float64 {
+	// loong64:"FMSUBD"
 	// riscv64:"FMSUBD"
 	return math.FMA(x, y, -z)
 }
 
 func fnma(x, y, z float64) float64 {
+	// loong64:"FNMSUBD"
 	// riscv64:"FNMADDD"
 	return math.FMA(-x, y, z)
 }
 
 func fnms(x, y, z float64) float64 {
+	// loong64:"FNMADDD"
 	// riscv64:"FNMSUBD"
 	return math.FMA(x, -y, -z)
 }
