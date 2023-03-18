@@ -84,6 +84,9 @@ var optab = []Optab{
 	{AMOVF, C_FREG, C_NONE, C_NONE, C_FREG, C_NONE, 33, 4, 0, 0},
 	{AMOVD, C_FREG, C_NONE, C_NONE, C_FREG, C_NONE, 33, 4, 0, 0},
 
+	{AFMADDF, C_FREG, C_REG, C_NONE, C_FREG, C_NONE, 63, 4, 0, 0},
+	{AFMADDF, C_FREG, C_REG, C_FREG, C_FREG, C_NONE, 63, 4, 0, 0},
+
 	{AMOVW, C_REG, C_NONE, C_NONE, C_SEXT, C_NONE, 7, 4, 0, 0},
 	{AMOVWU, C_REG, C_NONE, C_NONE, C_SEXT, C_NONE, 7, 4, 0, 0},
 	{AMOVV, C_REG, C_NONE, C_NONE, C_SEXT, C_NONE, 7, 4, 0, 0},
@@ -959,6 +962,15 @@ func buildop(ctxt *obj.Link) {
 			opset(ASUBD, r0)
 			opset(AADDD, r0)
 
+		case AFMADDF:
+			opset(AFMADDD, r0)
+			opset(AFMSUBF, r0)
+			opset(AFMSUBD, r0)
+			opset(AFNMADDF, r0)
+			opset(AFNMADDD, r0)
+			opset(AFNMSUBF, r0)
+			opset(AFNMSUBD, r0)
+
 		case AAND:
 			opset(AOR, r0)
 			opset(AXOR, r0)
@@ -1093,6 +1105,10 @@ func OP_TEN(x uint32, y uint32) uint32 {
 // r3 -> rd
 func OP_RRR(op uint32, r1 uint32, r2 uint32, r3 uint32) uint32 {
 	return op | (r1&0x1F)<<10 | (r2&0x1F)<<5 | (r3&0x1F)<<0
+}
+
+func OP_RRRR(op uint32, r1 uint32, r2 uint32, r3 uint32, r4 uint32) uint32 {
+	return op | (r1&0x1F)<<15 | (r2&0x1F)<<10 | (r3&0x1F)<<5 | (r4 & 0x1F)
 }
 
 // r2 -> rj
@@ -1632,6 +1648,13 @@ func (c *ctxt0) asmout(p *obj.Prog, o *Optab, out []uint32) {
 
 	case 62: // rdtimex rd, rj
 		o1 = OP_RR(c.oprr(p.As), uint32(p.To.Reg), uint32(p.RegTo2))
+
+	case 63: // fmadd r1, r2, [r3], r4
+		r := int(p.To.Reg)
+		if len(p.RestArgs) > 0 {
+			r = int(p.RestArgs[0].Reg)
+		}
+		o1 = OP_RRRR(c.oprrrr(p.As), uint32(p.From.Reg), uint32(p.Reg), uint32(r), uint32(p.To.Reg))
 	}
 
 	out[0] = o1
@@ -1848,6 +1871,30 @@ func (c *ctxt0) oprr(a obj.As) uint32 {
 	}
 
 	c.ctxt.Diag("bad rr opcode %v", a)
+	return 0
+}
+
+func (c *ctxt0) oprrrr(a obj.As) uint32 {
+	switch a {
+	case AFMADDF:
+		return 0x81 << 20
+	case AFMADDD:
+		return 0x82 << 20
+	case AFMSUBF:
+		return 0x85 << 20
+	case AFMSUBD:
+		return 0x86 << 20
+	case AFNMADDF:
+		return 0x89 << 20
+	case AFNMADDD:
+		return 0x8a << 20
+	case AFNMSUBF:
+		return 0x8d << 20
+	case AFNMSUBD:
+		return 0x8e << 20
+	}
+
+	c.ctxt.Diag("bad rrrr opcode %v", a)
 	return 0
 }
 
