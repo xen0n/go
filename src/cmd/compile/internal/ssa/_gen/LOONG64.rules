@@ -188,7 +188,7 @@
 
 (CvtBoolToUint8 ...) => (Copy ...)
 
-(Round(32|64)F ...) => (Copy ...)
+(Round(32|64)F ...) => (LoweredRound(32|64)F ...)
 
 // comparisons
 (Eq8 x y)  => (SGTU (MOVVconst [1]) (XOR (ZeroExt8to64 x) (ZeroExt8to64 y)))
@@ -605,6 +605,36 @@
 (DIVVU x (MOVVconst [c])) && isPowerOfTwo64(c) => (SRLVconst [log64(c)] x)
 (REMVU _ (MOVVconst [1])) => (MOVVconst [0])                       // mod
 (REMVU x (MOVVconst [c])) && isPowerOfTwo64(c) => (ANDconst [c-1] x) // mod
+
+// FMA
+(FMA ...) => (FMADDD ...)
+((ADD|SUB)F (MULF x y) z) && z.Block.Func.useFMA(v) => (FM(ADD|SUB)F x y z)
+((ADD|SUB)D (MULD x y) z) && z.Block.Func.useFMA(v) => (FM(ADD|SUB)D x y z)
+// z - xy -> -(xy - z)
+(SUBF z (MULF x y)) && z.Block.Func.useFMA(v) => (FNMSUBF x y z)
+(SUBD z (MULD x y)) && z.Block.Func.useFMA(v) => (FNMSUBD x y z)
+// z + (-xy) -> -(xy - z)
+// z - (-xy) -> xy + z
+((ADD|SUB)F z (NEGF (MULF x y))) && z.Block.Func.useFMA(v) => (F(NMSUB|MADD)F x y z)
+((ADD|SUB)D z (NEGD (MULD x y))) && z.Block.Func.useFMA(v) => (F(NMSUB|MADD)D x y z)
+// -xy - z -> -(xy + z)
+(SUBF (NEGF (MULF x y)) z) && z.Block.Func.useFMA(v) => (FNMADDF x y z)
+(SUBD (NEGD (MULD x y)) z) && z.Block.Func.useFMA(v) => (FNMADDD x y z)
+
+// Merge negation into fused multiply-add and multiply-subtract.
+//
+// Key:
+//
+//   [+ -]((x * y) [+ -] z).
+//    _ N           A S
+//                  D U
+//                  D B
+//
+// Note: multiplication commutativity handled by rule generator.
+(F(MADD|NMSUB|MSUB|NMADD)F neg:(NEGF x) y z) && neg.Uses == 1 => (F(NMSUB|MADD|NMADD|MSUB)F x y z)
+(F(MADD|NMSUB|MSUB|NMADD)D neg:(NEGD x) y z) && neg.Uses == 1 => (F(NMSUB|MADD|NMADD|MSUB)D x y z)
+(F(MADD|NMSUB|MSUB|NMADD)F x y neg:(NEGF z)) && neg.Uses == 1 => (F(MSUB|NMADD|MADD|NMSUB)F x y z)
+(F(MADD|NMSUB|MSUB|NMADD)D x y neg:(NEGD z)) && neg.Uses == 1 => (F(MSUB|NMADD|MADD|NMSUB)D x y z)
 
 // generic simplifications
 (ADDV x (NEGV y)) => (SUBV x y)

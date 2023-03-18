@@ -200,6 +200,9 @@ func rewriteValueLOONG64(v *Value) bool {
 		return rewriteValueLOONG64_OpEqB(v)
 	case OpEqPtr:
 		return rewriteValueLOONG64_OpEqPtr(v)
+	case OpFMA:
+		v.Op = OpLOONG64FMADDD
+		return true
 	case OpGetCallerPC:
 		v.Op = OpLOONG64LoweredGetCallerPC
 		return true
@@ -228,6 +231,10 @@ func rewriteValueLOONG64(v *Value) bool {
 		return rewriteValueLOONG64_OpIsNonNil(v)
 	case OpIsSliceInBounds:
 		return rewriteValueLOONG64_OpIsSliceInBounds(v)
+	case OpLOONG64ADDD:
+		return rewriteValueLOONG64_OpLOONG64ADDD(v)
+	case OpLOONG64ADDF:
+		return rewriteValueLOONG64_OpLOONG64ADDF(v)
 	case OpLOONG64ADDV:
 		return rewriteValueLOONG64_OpLOONG64ADDV(v)
 	case OpLOONG64ADDVconst:
@@ -240,6 +247,22 @@ func rewriteValueLOONG64(v *Value) bool {
 		return rewriteValueLOONG64_OpLOONG64DIVV(v)
 	case OpLOONG64DIVVU:
 		return rewriteValueLOONG64_OpLOONG64DIVVU(v)
+	case OpLOONG64FMADDD:
+		return rewriteValueLOONG64_OpLOONG64FMADDD(v)
+	case OpLOONG64FMADDF:
+		return rewriteValueLOONG64_OpLOONG64FMADDF(v)
+	case OpLOONG64FMSUBD:
+		return rewriteValueLOONG64_OpLOONG64FMSUBD(v)
+	case OpLOONG64FMSUBF:
+		return rewriteValueLOONG64_OpLOONG64FMSUBF(v)
+	case OpLOONG64FNMADDD:
+		return rewriteValueLOONG64_OpLOONG64FNMADDD(v)
+	case OpLOONG64FNMADDF:
+		return rewriteValueLOONG64_OpLOONG64FNMADDF(v)
+	case OpLOONG64FNMSUBD:
+		return rewriteValueLOONG64_OpLOONG64FNMSUBD(v)
+	case OpLOONG64FNMSUBF:
+		return rewriteValueLOONG64_OpLOONG64FNMSUBF(v)
 	case OpLOONG64LoweredAtomicAdd32:
 		return rewriteValueLOONG64_OpLOONG64LoweredAtomicAdd32(v)
 	case OpLOONG64LoweredAtomicAdd64:
@@ -344,6 +367,10 @@ func rewriteValueLOONG64(v *Value) bool {
 		return rewriteValueLOONG64_OpLOONG64SRLV(v)
 	case OpLOONG64SRLVconst:
 		return rewriteValueLOONG64_OpLOONG64SRLVconst(v)
+	case OpLOONG64SUBD:
+		return rewriteValueLOONG64_OpLOONG64SUBD(v)
+	case OpLOONG64SUBF:
+		return rewriteValueLOONG64_OpLOONG64SUBF(v)
 	case OpLOONG64SUBV:
 		return rewriteValueLOONG64_OpLOONG64SUBV(v)
 	case OpLOONG64SUBVconst:
@@ -533,10 +560,10 @@ func rewriteValueLOONG64(v *Value) bool {
 	case OpRotateLeft8:
 		return rewriteValueLOONG64_OpRotateLeft8(v)
 	case OpRound32F:
-		v.Op = OpCopy
+		v.Op = OpLOONG64LoweredRound32F
 		return true
 	case OpRound64F:
-		v.Op = OpCopy
+		v.Op = OpLOONG64LoweredRound64F
 		return true
 	case OpRsh16Ux16:
 		return rewriteValueLOONG64_OpRsh16Ux16(v)
@@ -1307,6 +1334,104 @@ func rewriteValueLOONG64_OpIsSliceInBounds(v *Value) bool {
 		return true
 	}
 }
+func rewriteValueLOONG64_OpLOONG64ADDD(v *Value) bool {
+	v_1 := v.Args[1]
+	v_0 := v.Args[0]
+	// match: (ADDD (MULD x y) z)
+	// cond: z.Block.Func.useFMA(v)
+	// result: (FMADDD x y z)
+	for {
+		for _i0 := 0; _i0 <= 1; _i0, v_0, v_1 = _i0+1, v_1, v_0 {
+			if v_0.Op != OpLOONG64MULD {
+				continue
+			}
+			y := v_0.Args[1]
+			x := v_0.Args[0]
+			z := v_1
+			if !(z.Block.Func.useFMA(v)) {
+				continue
+			}
+			v.reset(OpLOONG64FMADDD)
+			v.AddArg3(x, y, z)
+			return true
+		}
+		break
+	}
+	// match: (ADDD z (NEGD (MULD x y)))
+	// cond: z.Block.Func.useFMA(v)
+	// result: (FNMSUBD x y z)
+	for {
+		for _i0 := 0; _i0 <= 1; _i0, v_0, v_1 = _i0+1, v_1, v_0 {
+			z := v_0
+			if v_1.Op != OpLOONG64NEGD {
+				continue
+			}
+			v_1_0 := v_1.Args[0]
+			if v_1_0.Op != OpLOONG64MULD {
+				continue
+			}
+			y := v_1_0.Args[1]
+			x := v_1_0.Args[0]
+			if !(z.Block.Func.useFMA(v)) {
+				continue
+			}
+			v.reset(OpLOONG64FNMSUBD)
+			v.AddArg3(x, y, z)
+			return true
+		}
+		break
+	}
+	return false
+}
+func rewriteValueLOONG64_OpLOONG64ADDF(v *Value) bool {
+	v_1 := v.Args[1]
+	v_0 := v.Args[0]
+	// match: (ADDF (MULF x y) z)
+	// cond: z.Block.Func.useFMA(v)
+	// result: (FMADDF x y z)
+	for {
+		for _i0 := 0; _i0 <= 1; _i0, v_0, v_1 = _i0+1, v_1, v_0 {
+			if v_0.Op != OpLOONG64MULF {
+				continue
+			}
+			y := v_0.Args[1]
+			x := v_0.Args[0]
+			z := v_1
+			if !(z.Block.Func.useFMA(v)) {
+				continue
+			}
+			v.reset(OpLOONG64FMADDF)
+			v.AddArg3(x, y, z)
+			return true
+		}
+		break
+	}
+	// match: (ADDF z (NEGF (MULF x y)))
+	// cond: z.Block.Func.useFMA(v)
+	// result: (FNMSUBF x y z)
+	for {
+		for _i0 := 0; _i0 <= 1; _i0, v_0, v_1 = _i0+1, v_1, v_0 {
+			z := v_0
+			if v_1.Op != OpLOONG64NEGF {
+				continue
+			}
+			v_1_0 := v_1.Args[0]
+			if v_1_0.Op != OpLOONG64MULF {
+				continue
+			}
+			y := v_1_0.Args[1]
+			x := v_1_0.Args[0]
+			if !(z.Block.Func.useFMA(v)) {
+				continue
+			}
+			v.reset(OpLOONG64FNMSUBF)
+			v.AddArg3(x, y, z)
+			return true
+		}
+		break
+	}
+	return false
+}
 func rewriteValueLOONG64_OpLOONG64ADDV(v *Value) bool {
 	v_1 := v.Args[1]
 	v_0 := v.Args[0]
@@ -1586,6 +1711,366 @@ func rewriteValueLOONG64_OpLOONG64DIVVU(v *Value) bool {
 		}
 		v.reset(OpLOONG64MOVVconst)
 		v.AuxInt = int64ToAuxInt(int64(uint64(c) / uint64(d)))
+		return true
+	}
+	return false
+}
+func rewriteValueLOONG64_OpLOONG64FMADDD(v *Value) bool {
+	v_2 := v.Args[2]
+	v_1 := v.Args[1]
+	v_0 := v.Args[0]
+	// match: (FMADDD neg:(NEGD x) y z)
+	// cond: neg.Uses == 1
+	// result: (FNMSUBD x y z)
+	for {
+		for _i0 := 0; _i0 <= 1; _i0, v_0, v_1 = _i0+1, v_1, v_0 {
+			neg := v_0
+			if neg.Op != OpLOONG64NEGD {
+				continue
+			}
+			x := neg.Args[0]
+			y := v_1
+			z := v_2
+			if !(neg.Uses == 1) {
+				continue
+			}
+			v.reset(OpLOONG64FNMSUBD)
+			v.AddArg3(x, y, z)
+			return true
+		}
+		break
+	}
+	// match: (FMADDD x y neg:(NEGD z))
+	// cond: neg.Uses == 1
+	// result: (FMSUBD x y z)
+	for {
+		x := v_0
+		y := v_1
+		neg := v_2
+		if neg.Op != OpLOONG64NEGD {
+			break
+		}
+		z := neg.Args[0]
+		if !(neg.Uses == 1) {
+			break
+		}
+		v.reset(OpLOONG64FMSUBD)
+		v.AddArg3(x, y, z)
+		return true
+	}
+	return false
+}
+func rewriteValueLOONG64_OpLOONG64FMADDF(v *Value) bool {
+	v_2 := v.Args[2]
+	v_1 := v.Args[1]
+	v_0 := v.Args[0]
+	// match: (FMADDF neg:(NEGF x) y z)
+	// cond: neg.Uses == 1
+	// result: (FNMSUBF x y z)
+	for {
+		for _i0 := 0; _i0 <= 1; _i0, v_0, v_1 = _i0+1, v_1, v_0 {
+			neg := v_0
+			if neg.Op != OpLOONG64NEGF {
+				continue
+			}
+			x := neg.Args[0]
+			y := v_1
+			z := v_2
+			if !(neg.Uses == 1) {
+				continue
+			}
+			v.reset(OpLOONG64FNMSUBF)
+			v.AddArg3(x, y, z)
+			return true
+		}
+		break
+	}
+	// match: (FMADDF x y neg:(NEGF z))
+	// cond: neg.Uses == 1
+	// result: (FMSUBF x y z)
+	for {
+		x := v_0
+		y := v_1
+		neg := v_2
+		if neg.Op != OpLOONG64NEGF {
+			break
+		}
+		z := neg.Args[0]
+		if !(neg.Uses == 1) {
+			break
+		}
+		v.reset(OpLOONG64FMSUBF)
+		v.AddArg3(x, y, z)
+		return true
+	}
+	return false
+}
+func rewriteValueLOONG64_OpLOONG64FMSUBD(v *Value) bool {
+	v_2 := v.Args[2]
+	v_1 := v.Args[1]
+	v_0 := v.Args[0]
+	// match: (FMSUBD neg:(NEGD x) y z)
+	// cond: neg.Uses == 1
+	// result: (FNMADDD x y z)
+	for {
+		for _i0 := 0; _i0 <= 1; _i0, v_0, v_1 = _i0+1, v_1, v_0 {
+			neg := v_0
+			if neg.Op != OpLOONG64NEGD {
+				continue
+			}
+			x := neg.Args[0]
+			y := v_1
+			z := v_2
+			if !(neg.Uses == 1) {
+				continue
+			}
+			v.reset(OpLOONG64FNMADDD)
+			v.AddArg3(x, y, z)
+			return true
+		}
+		break
+	}
+	// match: (FMSUBD x y neg:(NEGD z))
+	// cond: neg.Uses == 1
+	// result: (FMADDD x y z)
+	for {
+		x := v_0
+		y := v_1
+		neg := v_2
+		if neg.Op != OpLOONG64NEGD {
+			break
+		}
+		z := neg.Args[0]
+		if !(neg.Uses == 1) {
+			break
+		}
+		v.reset(OpLOONG64FMADDD)
+		v.AddArg3(x, y, z)
+		return true
+	}
+	return false
+}
+func rewriteValueLOONG64_OpLOONG64FMSUBF(v *Value) bool {
+	v_2 := v.Args[2]
+	v_1 := v.Args[1]
+	v_0 := v.Args[0]
+	// match: (FMSUBF neg:(NEGF x) y z)
+	// cond: neg.Uses == 1
+	// result: (FNMADDF x y z)
+	for {
+		for _i0 := 0; _i0 <= 1; _i0, v_0, v_1 = _i0+1, v_1, v_0 {
+			neg := v_0
+			if neg.Op != OpLOONG64NEGF {
+				continue
+			}
+			x := neg.Args[0]
+			y := v_1
+			z := v_2
+			if !(neg.Uses == 1) {
+				continue
+			}
+			v.reset(OpLOONG64FNMADDF)
+			v.AddArg3(x, y, z)
+			return true
+		}
+		break
+	}
+	// match: (FMSUBF x y neg:(NEGF z))
+	// cond: neg.Uses == 1
+	// result: (FMADDF x y z)
+	for {
+		x := v_0
+		y := v_1
+		neg := v_2
+		if neg.Op != OpLOONG64NEGF {
+			break
+		}
+		z := neg.Args[0]
+		if !(neg.Uses == 1) {
+			break
+		}
+		v.reset(OpLOONG64FMADDF)
+		v.AddArg3(x, y, z)
+		return true
+	}
+	return false
+}
+func rewriteValueLOONG64_OpLOONG64FNMADDD(v *Value) bool {
+	v_2 := v.Args[2]
+	v_1 := v.Args[1]
+	v_0 := v.Args[0]
+	// match: (FNMADDD neg:(NEGD x) y z)
+	// cond: neg.Uses == 1
+	// result: (FMSUBD x y z)
+	for {
+		for _i0 := 0; _i0 <= 1; _i0, v_0, v_1 = _i0+1, v_1, v_0 {
+			neg := v_0
+			if neg.Op != OpLOONG64NEGD {
+				continue
+			}
+			x := neg.Args[0]
+			y := v_1
+			z := v_2
+			if !(neg.Uses == 1) {
+				continue
+			}
+			v.reset(OpLOONG64FMSUBD)
+			v.AddArg3(x, y, z)
+			return true
+		}
+		break
+	}
+	// match: (FNMADDD x y neg:(NEGD z))
+	// cond: neg.Uses == 1
+	// result: (FNMSUBD x y z)
+	for {
+		x := v_0
+		y := v_1
+		neg := v_2
+		if neg.Op != OpLOONG64NEGD {
+			break
+		}
+		z := neg.Args[0]
+		if !(neg.Uses == 1) {
+			break
+		}
+		v.reset(OpLOONG64FNMSUBD)
+		v.AddArg3(x, y, z)
+		return true
+	}
+	return false
+}
+func rewriteValueLOONG64_OpLOONG64FNMADDF(v *Value) bool {
+	v_2 := v.Args[2]
+	v_1 := v.Args[1]
+	v_0 := v.Args[0]
+	// match: (FNMADDF neg:(NEGF x) y z)
+	// cond: neg.Uses == 1
+	// result: (FMSUBF x y z)
+	for {
+		for _i0 := 0; _i0 <= 1; _i0, v_0, v_1 = _i0+1, v_1, v_0 {
+			neg := v_0
+			if neg.Op != OpLOONG64NEGF {
+				continue
+			}
+			x := neg.Args[0]
+			y := v_1
+			z := v_2
+			if !(neg.Uses == 1) {
+				continue
+			}
+			v.reset(OpLOONG64FMSUBF)
+			v.AddArg3(x, y, z)
+			return true
+		}
+		break
+	}
+	// match: (FNMADDF x y neg:(NEGF z))
+	// cond: neg.Uses == 1
+	// result: (FNMSUBF x y z)
+	for {
+		x := v_0
+		y := v_1
+		neg := v_2
+		if neg.Op != OpLOONG64NEGF {
+			break
+		}
+		z := neg.Args[0]
+		if !(neg.Uses == 1) {
+			break
+		}
+		v.reset(OpLOONG64FNMSUBF)
+		v.AddArg3(x, y, z)
+		return true
+	}
+	return false
+}
+func rewriteValueLOONG64_OpLOONG64FNMSUBD(v *Value) bool {
+	v_2 := v.Args[2]
+	v_1 := v.Args[1]
+	v_0 := v.Args[0]
+	// match: (FNMSUBD neg:(NEGD x) y z)
+	// cond: neg.Uses == 1
+	// result: (FMADDD x y z)
+	for {
+		for _i0 := 0; _i0 <= 1; _i0, v_0, v_1 = _i0+1, v_1, v_0 {
+			neg := v_0
+			if neg.Op != OpLOONG64NEGD {
+				continue
+			}
+			x := neg.Args[0]
+			y := v_1
+			z := v_2
+			if !(neg.Uses == 1) {
+				continue
+			}
+			v.reset(OpLOONG64FMADDD)
+			v.AddArg3(x, y, z)
+			return true
+		}
+		break
+	}
+	// match: (FNMSUBD x y neg:(NEGD z))
+	// cond: neg.Uses == 1
+	// result: (FNMADDD x y z)
+	for {
+		x := v_0
+		y := v_1
+		neg := v_2
+		if neg.Op != OpLOONG64NEGD {
+			break
+		}
+		z := neg.Args[0]
+		if !(neg.Uses == 1) {
+			break
+		}
+		v.reset(OpLOONG64FNMADDD)
+		v.AddArg3(x, y, z)
+		return true
+	}
+	return false
+}
+func rewriteValueLOONG64_OpLOONG64FNMSUBF(v *Value) bool {
+	v_2 := v.Args[2]
+	v_1 := v.Args[1]
+	v_0 := v.Args[0]
+	// match: (FNMSUBF neg:(NEGF x) y z)
+	// cond: neg.Uses == 1
+	// result: (FMADDF x y z)
+	for {
+		for _i0 := 0; _i0 <= 1; _i0, v_0, v_1 = _i0+1, v_1, v_0 {
+			neg := v_0
+			if neg.Op != OpLOONG64NEGF {
+				continue
+			}
+			x := neg.Args[0]
+			y := v_1
+			z := v_2
+			if !(neg.Uses == 1) {
+				continue
+			}
+			v.reset(OpLOONG64FMADDF)
+			v.AddArg3(x, y, z)
+			return true
+		}
+		break
+	}
+	// match: (FNMSUBF x y neg:(NEGF z))
+	// cond: neg.Uses == 1
+	// result: (FNMADDF x y z)
+	for {
+		x := v_0
+		y := v_1
+		neg := v_2
+		if neg.Op != OpLOONG64NEGF {
+			break
+		}
+		z := neg.Args[0]
+		if !(neg.Uses == 1) {
+			break
+		}
+		v.reset(OpLOONG64FNMADDF)
+		v.AddArg3(x, y, z)
 		return true
 	}
 	return false
@@ -4121,6 +4606,168 @@ func rewriteValueLOONG64_OpLOONG64SRLVconst(v *Value) bool {
 		d := auxIntToInt64(v_0.AuxInt)
 		v.reset(OpLOONG64MOVVconst)
 		v.AuxInt = int64ToAuxInt(int64(uint64(d) >> uint64(c)))
+		return true
+	}
+	return false
+}
+func rewriteValueLOONG64_OpLOONG64SUBD(v *Value) bool {
+	v_1 := v.Args[1]
+	v_0 := v.Args[0]
+	// match: (SUBD (MULD x y) z)
+	// cond: z.Block.Func.useFMA(v)
+	// result: (FMSUBD x y z)
+	for {
+		if v_0.Op != OpLOONG64MULD {
+			break
+		}
+		y := v_0.Args[1]
+		x := v_0.Args[0]
+		z := v_1
+		if !(z.Block.Func.useFMA(v)) {
+			break
+		}
+		v.reset(OpLOONG64FMSUBD)
+		v.AddArg3(x, y, z)
+		return true
+	}
+	// match: (SUBD z (MULD x y))
+	// cond: z.Block.Func.useFMA(v)
+	// result: (FNMSUBD x y z)
+	for {
+		z := v_0
+		if v_1.Op != OpLOONG64MULD {
+			break
+		}
+		y := v_1.Args[1]
+		x := v_1.Args[0]
+		if !(z.Block.Func.useFMA(v)) {
+			break
+		}
+		v.reset(OpLOONG64FNMSUBD)
+		v.AddArg3(x, y, z)
+		return true
+	}
+	// match: (SUBD z (NEGD (MULD x y)))
+	// cond: z.Block.Func.useFMA(v)
+	// result: (FMADDD x y z)
+	for {
+		z := v_0
+		if v_1.Op != OpLOONG64NEGD {
+			break
+		}
+		v_1_0 := v_1.Args[0]
+		if v_1_0.Op != OpLOONG64MULD {
+			break
+		}
+		y := v_1_0.Args[1]
+		x := v_1_0.Args[0]
+		if !(z.Block.Func.useFMA(v)) {
+			break
+		}
+		v.reset(OpLOONG64FMADDD)
+		v.AddArg3(x, y, z)
+		return true
+	}
+	// match: (SUBD (NEGD (MULD x y)) z)
+	// cond: z.Block.Func.useFMA(v)
+	// result: (FNMADDD x y z)
+	for {
+		if v_0.Op != OpLOONG64NEGD {
+			break
+		}
+		v_0_0 := v_0.Args[0]
+		if v_0_0.Op != OpLOONG64MULD {
+			break
+		}
+		y := v_0_0.Args[1]
+		x := v_0_0.Args[0]
+		z := v_1
+		if !(z.Block.Func.useFMA(v)) {
+			break
+		}
+		v.reset(OpLOONG64FNMADDD)
+		v.AddArg3(x, y, z)
+		return true
+	}
+	return false
+}
+func rewriteValueLOONG64_OpLOONG64SUBF(v *Value) bool {
+	v_1 := v.Args[1]
+	v_0 := v.Args[0]
+	// match: (SUBF (MULF x y) z)
+	// cond: z.Block.Func.useFMA(v)
+	// result: (FMSUBF x y z)
+	for {
+		if v_0.Op != OpLOONG64MULF {
+			break
+		}
+		y := v_0.Args[1]
+		x := v_0.Args[0]
+		z := v_1
+		if !(z.Block.Func.useFMA(v)) {
+			break
+		}
+		v.reset(OpLOONG64FMSUBF)
+		v.AddArg3(x, y, z)
+		return true
+	}
+	// match: (SUBF z (MULF x y))
+	// cond: z.Block.Func.useFMA(v)
+	// result: (FNMSUBF x y z)
+	for {
+		z := v_0
+		if v_1.Op != OpLOONG64MULF {
+			break
+		}
+		y := v_1.Args[1]
+		x := v_1.Args[0]
+		if !(z.Block.Func.useFMA(v)) {
+			break
+		}
+		v.reset(OpLOONG64FNMSUBF)
+		v.AddArg3(x, y, z)
+		return true
+	}
+	// match: (SUBF z (NEGF (MULF x y)))
+	// cond: z.Block.Func.useFMA(v)
+	// result: (FMADDF x y z)
+	for {
+		z := v_0
+		if v_1.Op != OpLOONG64NEGF {
+			break
+		}
+		v_1_0 := v_1.Args[0]
+		if v_1_0.Op != OpLOONG64MULF {
+			break
+		}
+		y := v_1_0.Args[1]
+		x := v_1_0.Args[0]
+		if !(z.Block.Func.useFMA(v)) {
+			break
+		}
+		v.reset(OpLOONG64FMADDF)
+		v.AddArg3(x, y, z)
+		return true
+	}
+	// match: (SUBF (NEGF (MULF x y)) z)
+	// cond: z.Block.Func.useFMA(v)
+	// result: (FNMADDF x y z)
+	for {
+		if v_0.Op != OpLOONG64NEGF {
+			break
+		}
+		v_0_0 := v_0.Args[0]
+		if v_0_0.Op != OpLOONG64MULF {
+			break
+		}
+		y := v_0_0.Args[1]
+		x := v_0_0.Args[0]
+		z := v_1
+		if !(z.Block.Func.useFMA(v)) {
+			break
+		}
+		v.reset(OpLOONG64FNMADDF)
+		v.AddArg3(x, y, z)
 		return true
 	}
 	return false
