@@ -126,8 +126,12 @@
 // unary ops
 (Neg(64|32|16|8) ...) => (NEGV ...)
 (Neg(32|64)F ...) => (NEG(F|D) ...)
-(Ctz(32|64) ...) => (CTZ(W|V) ...)
+(Ctz32 (Com32 x)) => (CTOW x)
+(Ctz64 (Com64 x)) => (CTOV x)
+(Ctz(32|64) x) => (CTZ(W|V) x)
 (Ctz(8|16|32|64)NonZero ...) => (Ctz(8|16|32|64) ...)
+(BitLen64 <t> (Com64 x)) => (NEGV <t> (SUBVconst <t> [64] (CLOV <t> x)))
+(BitLen32 <t> (Com32 x)) => (NEGV <t> (SUBVconst <t> [32] (CLOW <t> x)))
 (BitLen64 <t> x) => (NEGV <t> (SUBVconst <t> [64] (CLZV <t> x)))
 (BitLen32 <t> x) => (NEGV <t> (SUBVconst <t> [32] (CLZW <t> x)))
 (Bswap(16|32|64) ...) => (REVB(2H|2W|V) ...)
@@ -619,6 +623,9 @@
 (AND x x) => x
 (OR  x x) => x
 (XOR x x) => (MOVVconst [0])
+
+// recognize and fold counting of leading/trailing ones
+(C(TZW|TZV|LZW|LZV) (NOR (MOVVconst [0]) x)) => (C(TOW|TOV|LOW|LOV) x)
 
 // remove redundant *const ops
 (ADDVconst [0]  x) => x
