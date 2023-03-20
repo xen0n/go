@@ -116,6 +116,18 @@ func rewriteValueLOONG64(v *Value) bool {
 		return rewriteValueLOONG64_OpConstBool(v)
 	case OpConstNil:
 		return rewriteValueLOONG64_OpConstNil(v)
+	case OpCtz32:
+		v.Op = OpLOONG64CTZW
+		return true
+	case OpCtz32NonZero:
+		v.Op = OpCtz32
+		return true
+	case OpCtz64:
+		v.Op = OpLOONG64CTZV
+		return true
+	case OpCtz64NonZero:
+		v.Op = OpCtz64
+		return true
 	case OpCvt32Fto32:
 		v.Op = OpLOONG64TRUNCFW
 		return true
