@@ -1756,6 +1756,9 @@ const (
 	OpLOONG64CTZV
 	OpLOONG64CLZW
 	OpLOONG64CLZV
+	OpLOONG64REVB2H
+	OpLOONG64REVB2W
+	OpLOONG64REVBV
 	OpLOONG64MASKEQZ
 	OpLOONG64MASKNEZ
 	OpLOONG64SLLV
@@ -23502,6 +23505,45 @@ var opcodeTable = [...]opInfo{
 		name:   "CLZV",
 		argLen: 1,
 		asm:    loong64.ACLZV,
+		reg: regInfo{
+			inputs: []inputInfo{
+				{0, 1072693240}, // R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15 R16 R17 R18 R19 R20 g R23 R24 R25 R26 R27 R28 R29 R31
+			},
+			outputs: []outputInfo{
+				{0, 1070596088}, // R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15 R16 R17 R18 R19 R20 R23 R24 R25 R26 R27 R28 R29 R31
+			},
+		},
+	},
+	{
+		name:   "REVB2H",
+		argLen: 1,
+		asm:    loong64.AREVB2H,
+		reg: regInfo{
+			inputs: []inputInfo{
+				{0, 1072693240}, // R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15 R16 R17 R18 R19 R20 g R23 R24 R25 R26 R27 R28 R29 R31
+			},
+			outputs: []outputInfo{
+				{0, 1070596088}, // R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15 R16 R17 R18 R19 R20 R23 R24 R25 R26 R27 R28 R29 R31
+			},
+		},
+	},
+	{
+		name:   "REVB2W",
+		argLen: 1,
+		asm:    loong64.AREVB2W,
+		reg: regInfo{
+			inputs: []inputInfo{
+				{0, 1072693240}, // R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15 R16 R17 R18 R19 R20 g R23 R24 R25 R26 R27 R28 R29 R31
+			},
+			outputs: []outputInfo{
+				{0, 1070596088}, // R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15 R16 R17 R18 R19 R20 R23 R24 R25 R26 R27 R28 R29 R31
+			},
+		},
+	},
+	{
+		name:   "REVBV",
+		argLen: 1,
+		asm:    loong64.AREVBV,
 		reg: regInfo{
 			inputs: []inputInfo{
 				{0, 1072693240}, // R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15 R16 R17 R18 R19 R20 g R23 R24 R25 R26 R27 R28 R29 R31
