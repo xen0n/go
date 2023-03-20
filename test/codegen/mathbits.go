@@ -310,6 +310,7 @@ func TrailingZeros(n uint) int {
 	// amd64/v3:"TZCNTQ"
 	// arm:"CLZ"
 	// arm64:"RBIT","CLZ"
+	// loong64:"CTZV"
 	// s390x:"FLOGR"
 	// ppc64/power8:"ANDN","POPCNTD"
 	// ppc64le/power8:"ANDN","POPCNTD"
@@ -323,6 +324,7 @@ func TrailingZeros64(n uint64) int {
 	// amd64/v1,amd64/v2:"BSFQ","MOVL\t\\$64","CMOVQEQ"
 	// amd64/v3:"TZCNTQ"
 	// arm64:"RBIT","CLZ"
+	// loong64:"CTZV"
 	// s390x:"FLOGR"
 	// ppc64/power8:"ANDN","POPCNTD"
 	// ppc64le/power8:"ANDN","POPCNTD"
@@ -338,11 +340,42 @@ func TrailingZeros64Subtract(n uint64) int {
 	return bits.TrailingZeros64(1 - n)
 }
 
+func TrailingZeros64Eq(n uint64) bool {
+	// loong64:-"CTZV"
+	return bits.TrailingZeros64(n) == 64
+}
+
+func TrailingZeros64Neq(n uint64) bool {
+	// loong64:-"CTZV"
+	return bits.TrailingZeros64(n) != 64
+}
+
+func TrailingZeros64Less(n uint64) bool {
+	// loong64:-"CTZV"
+	return bits.TrailingZeros64(n) < 64
+}
+
+func TrailingZeros64Leq(n uint64) bool {
+	// loong64:-"CTZV"
+	return bits.TrailingZeros64(n) <= 63
+}
+
+func TrailingZeros64AndBranch(n uint64) int {
+	// loong64:"CTZV"
+	theBit := bits.TrailingZeros64(n)
+	// loong64:"BEQ",-"SGT"
+	if theBit < 64 {
+		return theBit * 2
+	}
+	return 0
+}
+
 func TrailingZeros32(n uint32) int {
 	// amd64/v1,amd64/v2:"BTSQ\\t\\$32","BSFQ"
 	// amd64/v3:"TZCNTL"
 	// arm:"CLZ"
 	// arm64:"RBITW","CLZW"
+	// loong64:"CTZW"
 	// s390x:"FLOGR","MOVWZ"
 	// ppc64/power8:"ANDN","POPCNTW"
 	// ppc64le/power8:"ANDN","POPCNTW"
@@ -352,11 +385,42 @@ func TrailingZeros32(n uint32) int {
 	return bits.TrailingZeros32(n)
 }
 
+func TrailingZeros32Eq(n uint32) bool {
+	// loong64:-"CTZW"
+	return bits.TrailingZeros32(n) == 32
+}
+
+func TrailingZeros32Neq(n uint32) bool {
+	// loong64:-"CTZW"
+	return bits.TrailingZeros32(n) != 32
+}
+
+func TrailingZeros32Less(n uint32) bool {
+	// loong64:-"CTZW"
+	return bits.TrailingZeros32(n) < 32
+}
+
+func TrailingZeros32Leq(n uint32) bool {
+	// loong64:-"CTZW"
+	return bits.TrailingZeros32(n) <= 31
+}
+
+func TrailingZeros32AndBranch(n uint32) int {
+	// loong64:"CTZW"
+	theBit := bits.TrailingZeros32(n)
+	// loong64:"BEQ",-"SGT"
+	if theBit < 32 {
+		return theBit * 2
+	}
+	return 0
+}
+
 func TrailingZeros16(n uint16) int {
 	// amd64:"BSFL","BTSL\\t\\$16"
 	// 386:"BSFL\t"
 	// arm:"ORR\t\\$65536","CLZ",-"MOVHU\tR"
 	// arm64:"ORR\t\\$65536","RBITW","CLZW",-"MOVHU\tR",-"RBIT\t",-"CLZ\t"
+	// loong64:"CTZV"
 	// s390x:"FLOGR","OR\t\\$65536"
 	// ppc64/power8:"POPCNTD","OR\\t\\$65536"
 	// ppc64le/power8:"POPCNTD","OR\\t\\$65536"
@@ -370,6 +434,7 @@ func TrailingZeros8(n uint8) int {
 	// amd64:"BSFL","BTSL\\t\\$8"
 	// arm:"ORR\t\\$256","CLZ",-"MOVBU\tR"
 	// arm64:"ORR\t\\$256","RBITW","CLZW",-"MOVBU\tR",-"RBIT\t",-"CLZ\t"
+	// loong64:"CTZV"
 	// s390x:"FLOGR","OR\t\\$256"
 	// wasm:"I64Ctz"
 	return bits.TrailingZeros8(n)

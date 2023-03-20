@@ -2670,3 +2670,40 @@
 (RotateLeft(64|32|16|8) (RotateLeft(64|32|16|8) x c) d) && c.Type.Size() == 4 && d.Type.Size() == 4 => (RotateLeft(64|32|16|8) x (Add32 <c.Type> c d))
 (RotateLeft(64|32|16|8) (RotateLeft(64|32|16|8) x c) d) && c.Type.Size() == 2 && d.Type.Size() == 2 => (RotateLeft(64|32|16|8) x (Add16 <c.Type> c d))
 (RotateLeft(64|32|16|8) (RotateLeft(64|32|16|8) x c) d) && c.Type.Size() == 1 && d.Type.Size() == 1 => (RotateLeft(64|32|16|8) x (Add8  <c.Type> c d))
+
+// Ctz simplifications.
+// CtzNN(x) == NN => x == 0
+(Eq(64|32|16|8) (Const(64|32|16|8) <t> [64]) (Ctz64 x)) && shouldStrengthReduceCtz(config) && config.PtrSize == 8 => (Eq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+(Eq(64|32|16|8) (Const(64|32|16|8) <t> [32]) (Ctz32 x)) && shouldStrengthReduceCtz(config) => (Eq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+(Eq(64|32|16|8) (Const(64|32|16|8) <t> [16]) (Ctz16 x)) && shouldStrengthReduceCtz(config) => (Eq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+(Eq(64|32|16|8) (Const(64|32|16|8) <t> [8])  (Ctz8  x)) && shouldStrengthReduceCtz(config) => (Eq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+
+// CtzNN(x) != NN => x != 0
+(Neq(64|32|16|8) (Const(64|32|16|8) <t> [64]) (Ctz64 x)) && shouldStrengthReduceCtz(config) && config.PtrSize == 8 => (Neq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+(Neq(64|32|16|8) (Const(64|32|16|8) <t> [32]) (Ctz32 x)) && shouldStrengthReduceCtz(config) => (Neq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+(Neq(64|32|16|8) (Const(64|32|16|8) <t> [16]) (Ctz16 x)) && shouldStrengthReduceCtz(config) => (Neq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+(Neq(64|32|16|8) (Const(64|32|16|8) <t> [8])  (Ctz8  x)) && shouldStrengthReduceCtz(config) => (Neq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+
+// CtzNN(x) < NN => x != 0
+(Less(64|32|16|8) (Ctz64 x) (Const(64|32|16|8) <t> [64])) && shouldStrengthReduceCtz(config) && config.PtrSize == 8 => (Neq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+(Less(64|32|16|8) (Ctz32 x) (Const(64|32|16|8) <t> [32])) && shouldStrengthReduceCtz(config) => (Neq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+(Less(64|32|16|8) (Ctz16 x) (Const(64|32|16|8) <t> [16])) && shouldStrengthReduceCtz(config) => (Neq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+(Less(64|32|16|8) (Ctz8  x) (Const(64|32|16|8) <t> [8]))  && shouldStrengthReduceCtz(config) => (Neq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+
+// CtzNN(x) >= NN => x == 0
+(Leq(64|32|16|8)  (Const(64|32|16|8) <t> [64]) (Ctz64 x)) && shouldStrengthReduceCtz(config) && config.PtrSize == 8 => (Eq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+(Leq(64|32|16|8)  (Const(64|32|16|8) <t> [32]) (Ctz32 x)) && shouldStrengthReduceCtz(config) => (Eq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+(Leq(64|32|16|8)  (Const(64|32|16|8) <t> [16]) (Ctz16 x)) && shouldStrengthReduceCtz(config) => (Eq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+(Leq(64|32|16|8)  (Const(64|32|16|8) <t> [8])  (Ctz8  x)) && shouldStrengthReduceCtz(config) => (Eq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+
+// CtzNN(x) <= NN - 1 => x != 0
+(Leq(64|32|16|8) (Ctz64 x) (Const(64|32|16|8) <t> [63])) && shouldStrengthReduceCtz(config) && config.PtrSize == 8 => (Neq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+(Leq(64|32|16|8) (Ctz32 x) (Const(64|32|16|8) <t> [31])) && shouldStrengthReduceCtz(config) => (Neq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+(Leq(64|32|16|8) (Ctz16 x) (Const(64|32|16|8) <t> [15])) && shouldStrengthReduceCtz(config) => (Neq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+(Leq(64|32|16|8) (Ctz8  x) (Const(64|32|16|8) <t> [7]))  && shouldStrengthReduceCtz(config) => (Neq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+
+// CtzNN(x) > NN - 1 => x == 0
+(Less(64|32|16|8) (Const(64|32|16|8) <t> [63]) (Ctz64 x)) && shouldStrengthReduceCtz(config) && config.PtrSize == 8 => (Eq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+(Less(64|32|16|8) (Const(64|32|16|8) <t> [31]) (Ctz32 x)) && shouldStrengthReduceCtz(config) => (Eq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+(Less(64|32|16|8) (Const(64|32|16|8) <t> [15]) (Ctz16 x)) && shouldStrengthReduceCtz(config) => (Eq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+(Less(64|32|16|8) (Const(64|32|16|8) <t> [7])  (Ctz8  x)) && shouldStrengthReduceCtz(config) => (Eq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
