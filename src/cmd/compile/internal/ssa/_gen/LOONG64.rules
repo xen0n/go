@@ -126,6 +126,8 @@
 // unary ops
 (Neg(64|32|16|8) ...) => (NEGV ...)
 (Neg(32|64)F ...) => (NEG(F|D) ...)
+(Ctz(32|64) ...) => (CTZ(W|V) ...)
+(Ctz(32|64)NonZero ...) => (Ctz(32|64) ...)
 
 (Com(64|32|16|8) x) => (NOR (MOVVconst [0]) x)
 
