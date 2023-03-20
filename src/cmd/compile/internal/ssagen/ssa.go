@@ -4008,12 +4008,12 @@ func InitTables() {
 		func(s *state, n *ir.CallExpr, args []*ssa.Value) *ssa.Value {
 			return s.newValue1(ssa.OpBswap32, types.Types[types.TUINT32], args[0])
 		},
-		sys.AMD64, sys.ARM64, sys.ARM, sys.S390X)
+		sys.AMD64, sys.ARM64, sys.ARM, sys.Loong64, sys.S390X)
 	addF("runtime/internal/sys", "Bswap64",
 		func(s *state, n *ir.CallExpr, args []*ssa.Value) *ssa.Value {
 			return s.newValue1(ssa.OpBswap64, types.Types[types.TUINT64], args[0])
 		},
-		sys.AMD64, sys.ARM64, sys.ARM, sys.S390X)
+		sys.AMD64, sys.ARM64, sys.ARM, sys.Loong64, sys.S390X)
 
 	/****** Prefetch ******/
 	makePrefetchFunc := func(op ssa.Op) func(s *state, n *ir.CallExpr, args []*ssa.Value) *ssa.Value {
