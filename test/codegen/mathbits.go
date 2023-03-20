@@ -17,6 +17,7 @@ func LeadingZeros(n uint) int {
 	// amd64/v3:"LZCNTQ", -"BSRQ"
 	// s390x:"FLOGR"
 	// arm:"CLZ" arm64:"CLZ"
+	// loong64:"CLZV",-"SUB"
 	// mips:"CLZ"
 	// wasm:"I64Clz"
 	// ppc64le:"CNTLZD"
@@ -29,6 +30,7 @@ func LeadingZeros64(n uint64) int {
 	// amd64/v3:"LZCNTQ", -"BSRQ"
 	// s390x:"FLOGR"
 	// arm:"CLZ" arm64:"CLZ"
+	// loong64:"CLZV",-"SUB"
 	// mips:"CLZ"
 	// wasm:"I64Clz"
 	// ppc64le:"CNTLZD"
@@ -41,6 +43,7 @@ func LeadingZeros32(n uint32) int {
 	// amd64/v3: "LZCNTL",- "BSRL"
 	// s390x:"FLOGR"
 	// arm:"CLZ" arm64:"CLZW"
+	// loong64:"CLZW",-"SUB"
 	// mips:"CLZ"
 	// wasm:"I64Clz"
 	// ppc64le:"CNTLZW"
@@ -53,6 +56,7 @@ func LeadingZeros16(n uint16) int {
 	// amd64/v3: "LZCNTL",- "BSRL"
 	// s390x:"FLOGR"
 	// arm:"CLZ" arm64:"CLZ"
+	// loong64:"CLZV"
 	// mips:"CLZ"
 	// wasm:"I64Clz"
 	// ppc64le:"CNTLZD"
@@ -65,6 +69,7 @@ func LeadingZeros8(n uint8) int {
 	// amd64/v3: "LZCNTL",- "BSRL"
 	// s390x:"FLOGR"
 	// arm:"CLZ" arm64:"CLZ"
+	// loong64:"CLZV"
 	// mips:"CLZ"
 	// wasm:"I64Clz"
 	// ppc64le:"CNTLZD"
@@ -81,6 +86,7 @@ func Len(n uint) int {
 	// amd64/v3: "LZCNTQ"
 	// s390x:"FLOGR"
 	// arm:"CLZ" arm64:"CLZ"
+	// loong64:"CLZV"
 	// mips:"CLZ"
 	// wasm:"I64Clz"
 	// ppc64le:"SUBC","CNTLZD"
@@ -93,6 +99,7 @@ func Len64(n uint64) int {
 	// amd64/v3: "LZCNTQ"
 	// s390x:"FLOGR"
 	// arm:"CLZ" arm64:"CLZ"
+	// loong64:"CLZV"
 	// mips:"CLZ"
 	// wasm:"I64Clz"
 	// ppc64le:"SUBC","CNTLZD"
@@ -101,9 +108,15 @@ func Len64(n uint64) int {
 }
 
 func SubFromLen64(n uint64) int {
+	// loong64:"CLZV",-"ADD"
 	// ppc64le:"CNTLZD",-"SUBC"
 	// ppc64:"CNTLZD",-"SUBC"
 	return 64 - bits.Len64(n)
+}
+
+func CompareWithLen64(n uint64) bool {
+	// loong64:"CLZV",-"ADD",-"[$]64",-"[$]9"
+	return bits.Len64(n) < 9
 }
 
 func Len32(n uint32) int {
@@ -111,6 +124,7 @@ func Len32(n uint32) int {
 	// amd64/v3: "LZCNTL"
 	// s390x:"FLOGR"
 	// arm:"CLZ" arm64:"CLZ"
+	// loong64:"CLZW"
 	// mips:"CLZ"
 	// wasm:"I64Clz"
 	// ppc64: "CNTLZW"
@@ -123,6 +137,7 @@ func Len16(n uint16) int {
 	// amd64/v3: "LZCNTL"
 	// s390x:"FLOGR"
 	// arm:"CLZ" arm64:"CLZ"
+	// loong64:"CLZV"
 	// mips:"CLZ"
 	// wasm:"I64Clz"
 	// ppc64le:"SUBC","CNTLZD"
@@ -135,6 +150,7 @@ func Len8(n uint8) int {
 	// amd64/v3: "LZCNTL"
 	// s390x:"FLOGR"
 	// arm:"CLZ" arm64:"CLZ"
+	// loong64:"CLZV"
 	// mips:"CLZ"
 	// wasm:"I64Clz"
 	// ppc64le:"SUBC","CNTLZD"
