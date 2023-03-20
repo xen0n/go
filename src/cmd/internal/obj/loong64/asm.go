@@ -79,7 +79,7 @@ var optab = []Optab{
 	{ASLL, C_REG, C_REG, C_NONE, C_REG, C_NONE, 9, 4, 0, 0},
 	{ASLLV, C_REG, C_NONE, C_NONE, C_REG, C_NONE, 9, 4, 0, 0},
 	{ASLLV, C_REG, C_REG, C_NONE, C_REG, C_NONE, 9, 4, 0, 0},
-	{ACLO, C_REG, C_NONE, C_NONE, C_REG, C_NONE, 9, 4, 0, 0},
+	{ACLOW, C_REG, C_NONE, C_NONE, C_REG, C_NONE, 66, 4, 0, 0},
 
 	{AADDF, C_FREG, C_NONE, C_NONE, C_FREG, C_NONE, 32, 4, 0, 0},
 	{AADDF, C_FREG, C_REG, C_NONE, C_FREG, C_NONE, 32, 4, 0, 0},
@@ -1171,8 +1171,26 @@ func buildop(ctxt *obj.Link) {
 			obj.ADUFFCOPY:
 			break
 
-		case ACLO:
-			opset(ACLZ, r0)
+		case ACLOW:
+			opset(ACLZW, r0)
+			opset(ACTOW, r0)
+			opset(ACTZW, r0)
+			opset(ACLOV, r0)
+			opset(ACLZV, r0)
+			opset(ACTOV, r0)
+			opset(ACTZV, r0)
+			opset(AREVB2H, r0)
+			opset(AREVB4H, r0)
+			opset(AREVB2W, r0)
+			opset(AREVBV, r0)
+			opset(AREVH2W, r0)
+			opset(AREVHV, r0)
+			opset(ABITREV4B, r0)
+			opset(ABITREV8B, r0)
+			opset(ABITREVW, r0)
+			opset(ABITREVV, r0)
+			opset(AEXTWB, r0)
+			opset(AEXTWH, r0)
 
 		case ATEQ:
 			opset(ATNE, r0)
@@ -1351,15 +1369,11 @@ func (c *ctxt0) asmout(p *obj.Prog, o *Optab, out []uint32) {
 		o1 = OP_12IRR(c.opirr(-p.As), uint32(v), uint32(r), uint32(p.To.Reg))
 
 	case 9: // sll r1,[r2],r3
-		if p.As != ACLO && p.As != ACLZ {
-			r := int(p.Reg)
-			if r == 0 {
-				r = int(p.To.Reg)
-			}
-			o1 = OP_RRR(c.oprrr(p.As), uint32(p.From.Reg), uint32(r), uint32(p.To.Reg))
-		} else { // clo r1,r2
-			o1 = OP_RR(c.oprr(p.As), uint32(p.From.Reg), uint32(p.To.Reg))
+		r := int(p.Reg)
+		if r == 0 {
+			r = int(p.To.Reg)
 		}
+		o1 = OP_RRR(c.oprrr(p.As), uint32(p.From.Reg), uint32(r), uint32(p.To.Reg))
 
 	case 10: // add $con,[r1],r2 ==> mov $con, t; add t,[r1],r2
 		v := c.regoff(&p.From)
@@ -1799,6 +1813,9 @@ func (c *ctxt0) asmout(p *obj.Prog, o *Optab, out []uint32) {
 			r = int(p.RestArgs[0].Reg)
 		}
 		o1 = OP_RRRR(c.oprrrr(p.As), uint32(p.From.Reg), uint32(p.Reg), uint32(r), uint32(p.To.Reg))
+
+	case 66: // clo.w r1, r2
+		o1 = OP_RR(c.oprr(p.As), uint32(p.From.Reg), uint32(p.To.Reg))
 	}
 
 	out[0] = o1
@@ -2002,10 +2019,46 @@ func (c *ctxt0) oprrr(a obj.As) uint32 {
 
 func (c *ctxt0) oprr(a obj.As) uint32 {
 	switch a {
-	case ACLO:
+	case ACLOW:
 		return 0x4 << 10
-	case ACLZ:
+	case ACLZW:
 		return 0x5 << 10
+	case ACTOW:
+		return 0x6 << 10
+	case ACTZW:
+		return 0x7 << 10
+	case ACLOV:
+		return 0x8 << 10
+	case ACLZV:
+		return 0x9 << 10
+	case ACTOV:
+		return 0xa << 10
+	case ACTZV:
+		return 0xb << 10
+	case AREVB2H:
+		return 0xc << 10
+	case AREVB4H:
+		return 0xd << 10
+	case AREVB2W:
+		return 0xe << 10
+	case AREVBV:
+		return 0xf << 10
+	case AREVH2W:
+		return 0x10 << 10
+	case AREVHV:
+		return 0x11 << 10
+	case ABITREV4B:
+		return 0x12 << 10
+	case ABITREV8B:
+		return 0x13 << 10
+	case ABITREVW:
+		return 0x14 << 10
+	case ABITREVV:
+		return 0x15 << 10
+	case AEXTWH:
+		return 0x16 << 10
+	case AEXTWB:
+		return 0x17 << 10
 	case ARDTIMELW:
 		return 0x18 << 10
 	case ARDTIMEHW:
