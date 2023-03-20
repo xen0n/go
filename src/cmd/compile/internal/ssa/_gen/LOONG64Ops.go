@@ -192,6 +192,8 @@ func init() {
 		{name: "NEGD", argLength: 1, reg: fp11, asm: "NEGD"},   // -arg0, float64
 		{name: "SQRTD", argLength: 1, reg: fp11, asm: "SQRTD"}, // sqrt(arg0), float64
 		{name: "SQRTF", argLength: 1, reg: fp11, asm: "SQRTF"}, // sqrt(arg0), float32
+		{name: "CTZW", argLength: 1, reg: gp11, asm: "CTZW"},   // Count trailing (low order) zeroes (returns 0-32)
+		{name: "CTZV", argLength: 1, reg: gp11, asm: "CTZV"},   // Count trailing (low order) zeroes (returns 0-64)
 
 		{name: "MASKEQZ", argLength: 2, reg: gp21, asm: "MASKEQZ"}, // returns 0 if arg1 == 0, otherwise returns arg0
 		{name: "MASKNEZ", argLength: 2, reg: gp21, asm: "MASKNEZ"}, // returns 0 if arg1 != 0, otherwise returns arg0

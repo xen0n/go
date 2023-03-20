@@ -2063,3 +2063,14 @@ func isARM64addcon(v int64) bool {
 	}
 	return v <= 0xFFF
 }
+
+// shouldStrengthReduceCtz reports whether strength-reduction of Ctz ops is
+// actually profitable and should be done in this case.
+func shouldStrengthReduceCtz(c *Config) bool {
+	switch c.arch {
+	case "loong64":
+		return true
+	default:
+		return false
+	}
+}
