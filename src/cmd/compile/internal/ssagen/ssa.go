@@ -4003,7 +4003,7 @@ func InitTables() {
 		},
 		sys.ARM64, sys.PPC64)
 
-	brev_arch := []sys.ArchFamily{sys.AMD64, sys.I386, sys.ARM64, sys.ARM, sys.S390X}
+	brev_arch := []sys.ArchFamily{sys.AMD64, sys.I386, sys.ARM64, sys.ARM, sys.Loong64, sys.S390X}
 	if buildcfg.GOPPC64 >= 10 {
 		// Use only on Power10 as the new byte reverse instructions that Power10 provide
 		// make it worthwhile as an intrinsic
@@ -4545,6 +4545,11 @@ func InitTables() {
 		sys.Loong64, sys.S390X)
 	alias("math/bits", "ReverseBytes64", "runtime/internal/sys", "Bswap64", all...)
 	alias("math/bits", "ReverseBytes32", "runtime/internal/sys", "Bswap32", all...)
+	addF("math/bits", "ReverseBytes16",
+		func(s *state, n *ir.CallExpr, args []*ssa.Value) *ssa.Value {
+			return s.newValue1(ssa.OpBswap16, types.Types[types.TUINT16], args[0])
+		},
+		sys.Loong64)
 	// ReverseBytes inlines correctly, no need to intrinsify it.
 	// Nothing special is needed for targets where ReverseBytes16 lowers to a rotate
 	// On Power10, 16-bit rotate is not available so use BRH instruction
