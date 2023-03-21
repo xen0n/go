@@ -14,7 +14,43 @@ import (
 	"log"
 )
 
-func gentext(ctxt *ld.Link, ldr *loader.Loader) {}
+func gentext(ctxt *ld.Link, ldr *loader.Loader) {
+	initfunc, addmoduledata := ld.PrepareAddmoduledata(ctxt)
+	if initfunc == nil {
+		return
+	}
+
+	o := func(op uint32) {
+		initfunc.AddUint32(ctxt.Arch, op)
+	}
+
+	// 0: pcalau12i r4, $0 <runtime.firstmoduledata>
+	//
+	//      0: R_ADDRLOONG64U
+	//
+	// 4: addi.d r4, r4, $0
+	//
+	//      4: R_ADDRLOONG64
+	o(0x1a000004)
+	rel, _ := initfunc.AddRel(objabi.R_ADDRLOONG64U)
+	rel.SetOff(0)
+	rel.SetSiz(4)
+	rel.SetSym(ctxt.Moduledata)
+	o(0x02c00084)
+	rel2, _ := initfunc.AddRel(objabi.R_ADDRLOONG64)
+	rel2.SetOff(4)
+	rel2.SetSiz(4)
+	rel2.SetSym(ctxt.Moduledata)
+
+	// 8: b $0 <runtime.addmoduledata>
+	//
+	//      8: R_CALLLOONG64
+	o(0x50000000)
+	rel3, _ := initfunc.AddRel(objabi.R_CALLLOONG64)
+	rel3.SetOff(8)
+	rel3.SetSiz(4)
+	rel3.SetSym(addmoduledata)
+}
 
 func adddynrel(target *ld.Target, ldr *loader.Loader, syms *ld.ArchSyms, s loader.Sym, r loader.Reloc, rIdx int) bool {
 	log.Fatalf("adddynrel not implemented")
