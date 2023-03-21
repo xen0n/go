@@ -315,6 +315,11 @@ const (
 	R_LOONG64_TLS_IE_PCREL_HI
 	R_LOONG64_TLS_IE_LO
 
+	// R_LOONG64_GOTPCREL_HI and R_LOONG64_GOT_LO relocates an pcalau12i, ld.d pair to compute
+	// the address of the GOT slot of the referenced symbol.
+	R_LOONG64_GOTPCREL_HI
+	R_LOONG64_GOT_LO
+
 	// R_JMPLOONG64 resolves to non-PC-relative target address of a JMP instruction,
 	// by encoding the address into the instruction.
 	R_JMPLOONG64
