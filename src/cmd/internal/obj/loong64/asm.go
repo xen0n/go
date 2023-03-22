@@ -74,6 +74,7 @@ var optab = []Optab{
 	{ANEGW, C_REG, C_NONE, C_NONE, C_REG, C_NONE, 2, 4, 0, 0},
 	{ANEGV, C_REG, C_NONE, C_NONE, C_REG, C_NONE, 2, 4, 0, 0},
 	{AMASKEQZ, C_REG, C_REG, C_NONE, C_REG, C_NONE, 2, 4, 0, 0},
+	{ACRCWBW, C_REG, C_REG, C_NONE, C_REG, C_NONE, 2, 4, 0, 0},
 
 	{ASLL, C_REG, C_NONE, C_NONE, C_REG, C_NONE, 9, 4, 0, 0},
 	{ASLL, C_REG, C_REG, C_NONE, C_REG, C_NONE, 9, 4, 0, 0},
@@ -1197,6 +1198,15 @@ func buildop(ctxt *obj.Link) {
 
 		case AMASKEQZ:
 			opset(AMASKNEZ, r0)
+
+		case ACRCWBW:
+			opset(ACRCWHW, r0)
+			opset(ACRCWWW, r0)
+			opset(ACRCWVW, r0)
+			opset(ACRCCWBW, r0)
+			opset(ACRCCWHW, r0)
+			opset(ACRCCWWW, r0)
+			opset(ACRCCWVW, r0)
 		}
 	}
 }
@@ -1918,6 +1928,23 @@ func (c *ctxt0) oprrr(a obj.As) uint32 {
 		return 0x45 << 15 // mod.d
 	case AREMVU:
 		return 0x47 << 15 // mod.du
+
+	case ACRCWBW:
+		return 0x48 << 15 // crc.w.b.w
+	case ACRCWHW:
+		return 0x49 << 15 // crc.w.h.w
+	case ACRCWWW:
+		return 0x4a << 15 // crc.w.w.w
+	case ACRCWVW:
+		return 0x4b << 15 // crc.w.d.w
+	case ACRCCWBW:
+		return 0x4c << 15 // crcc.w.b.w
+	case ACRCCWHW:
+		return 0x4d << 15 // crcc.w.h.w
+	case ACRCCWWW:
+		return 0x4e << 15 // crcc.w.w.w
+	case ACRCCWVW:
+		return 0x4f << 15 // crcc.w.d.w
 
 	case AJMP:
 		return 0x13 << 26 // jirl r0, rj, 0
