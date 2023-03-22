@@ -12,15 +12,15 @@ TEXT ·castagnoliUpdate(SB),NOSPLIT,$0-36
 	MOVV	p+8(FP), R5		// a1 = data pointer
 	MOVV	p_len+16(FP), R6	// a2 = len(p)
 
-	SGT	$8, R6, R12
-	BNE	R12, less_than_8
-	AND	$7, R5, R12
+	SGT	$16, R6, R12
+	BNE	R12, less_than_16
+	AND	$15, R5, R12
 	BEQ	R12, aligned
 
-	// Process the first few bytes to 8-byte align the input.
-	// t0 = 8 - t0. We need to process this many bytes to align.
+	// Process the first few bytes to 16-byte align the input.
+	// t0 = 16 - t0. We need to process this many bytes to align.
 	SUB	$1, R12
-	XOR	$7, R12
+	XOR	$15, R12
 
 	AND	$1, R12, R13
 	BEQ	R13, align_2
@@ -45,18 +45,36 @@ align_4:
 	ADDV	$4, R5
 	ADDV	$-4, R6
 
-aligned:
-	// The input is now 8-byte aligned and we can process 8-byte chunks.
-	SGT	$8, R6, R12
-	BNE	R12, less_than_8
+align_8:
+	AND	$8, R12, R13
+	BEQ	R13, aligned
 	MOVV	(R5), R13
 	CRCCWVW	R4, R13, R4
 	ADDV	$8, R5
 	ADDV	$-8, R6
+
+aligned:
+	// The input is now 16-byte aligned and we can process 16-byte chunks.
+	SGT	$16, R6, R12
+	BNE	R12, less_than_16
+	MOVV	(R5), R13
+	MOVV	8(R5), R14
+	CRCCWVW	R4, R13, R4
+	CRCCWVW	R4, R14, R4
+	ADDV	$16, R5
+	ADDV	$-16, R6
 	JMP	aligned
 
+less_than_16:
+	// We may have some bytes left over; process 8 bytes, then 4, then 2, then 1.
+	AND	$8, R6, R12
+	BEQ	R12, less_than_8
+	MOVV	(R5), R13
+	CRCCWVW	R4, R13, R4
+	ADDV	$8, R5
+	ADDV	$-8, R6
+
 less_than_8:
-	// We may have some bytes left over; process 4 bytes, then 2, then 1.
 	AND	$4, R6, R12
 	BEQ	R12, less_than_4
 	MOVW	(R5), R13
@@ -89,15 +107,15 @@ TEXT ·ieeeUpdate(SB),NOSPLIT,$0-36
 	MOVV	p+8(FP), R5		// a1 = data pointer
 	MOVV	p_len+16(FP), R6	// a2 = len(p)
 
-	SGT	$8, R6, R12
-	BNE	R12, less_than_8
-	AND	$7, R5, R12
+	SGT	$16, R6, R12
+	BNE	R12, less_than_16
+	AND	$15, R5, R12
 	BEQ	R12, aligned
 
-	// Process the first few bytes to 8-byte align the input.
-	// t0 = 8 - t0. We need to process this many bytes to align.
+	// Process the first few bytes to 16-byte align the input.
+	// t0 = 16 - t0. We need to process this many bytes to align.
 	SUB	$1, R12
-	XOR	$7, R12
+	XOR	$15, R12
 
 	AND	$1, R12, R13
 	BEQ	R13, align_2
@@ -122,18 +140,36 @@ align_4:
 	ADDV	$4, R5
 	ADDV	$-4, R6
 
-aligned:
-	// The input is now 8-byte aligned and we can process 8-byte chunks.
-	SGT	$8, R6, R12
-	BNE	R12, less_than_8
+align_8:
+	AND	$8, R12, R13
+	BEQ	R13, aligned
 	MOVV	(R5), R13
 	CRCWVW	R4, R13, R4
 	ADDV	$8, R5
 	ADDV	$-8, R6
+
+aligned:
+	// The input is now 16-byte aligned and we can process 16-byte chunks.
+	SGT	$16, R6, R12
+	BNE	R12, less_than_16
+	MOVV	(R5), R13
+	MOVV	8(R5), R14
+	CRCWVW	R4, R13, R4
+	CRCWVW	R4, R14, R4
+	ADDV	$16, R5
+	ADDV	$-16, R6
 	JMP	aligned
 
+less_than_16:
+	// We may have some bytes left over; process 8 bytes, then 4, then 2, then 1.
+	AND	$8, R6, R12
+	BEQ	R12, less_than_8
+	MOVV	(R5), R13
+	CRCWVW	R4, R13, R4
+	ADDV	$8, R5
+	ADDV	$-8, R6
+
 less_than_8:
-	// We may have some bytes left over; process 4 bytes, then 2, then 1.
 	AND	$4, R6, R12
 	BEQ	R12, less_than_4
 	MOVW	(R5), R13
