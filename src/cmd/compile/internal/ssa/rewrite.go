@@ -710,6 +710,9 @@ func valAndOffToAuxInt(v ValAndOff) int64 {
 func arm64BitFieldToAuxInt(v arm64BitField) int64 {
 	return int64(v)
 }
+func loong64BitFieldToAuxInt(v loong64BitField) int64 {
+	return int64(v)
+}
 func int128ToAuxInt(x int128) int64 {
 	if x != 0 {
 		panic("nonzero int128 not allowed")
@@ -2066,4 +2069,28 @@ func isARM64addcon(v int64) bool {
 		v >>= 12
 	}
 	return v <= 0xFFF
+}
+
+// encodes the msb and lsb for loong64 bitfield ops into the expected auxInt format.
+func loong64BFAuxInt(msb, lsb int64) loong64BitField {
+	if lsb < 0 || lsb > 63 {
+		panic("Loong64 bit field lsb constant out of range")
+	}
+	if msb < 0 || msb > 63 {
+		panic("Loong64 bit field msb constant out of range")
+	}
+	if msb <= lsb {
+		panic("Loong64 bit field msb <= lsb")
+	}
+	return loong64BitField(msb<<8 | lsb)
+}
+
+// returns the msb part of the auxInt field of loong64 bitfield ops.
+func (x loong64BitField) getLoong64BFmsb() int64 {
+	return int64(uint64(x) >> 8)
+}
+
+// returns the lsb part of the auxInt field of loong64 bitfield ops.
+func (x loong64BitField) getLoong64BFlsb() int64 {
+	return int64(uint64(x) & 0xff)
 }

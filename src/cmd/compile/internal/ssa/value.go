@@ -137,6 +137,13 @@ func (v *Value) AuxArm64BitField() arm64BitField {
 	return arm64BitField(v.AuxInt)
 }
 
+func (v *Value) AuxLoong64BitField() loong64BitField {
+	if opcodeTable[v.Op].auxType != auxLoong64BitField {
+		v.Fatalf("op %s doesn't have a Loong64BitField aux field", v.Op)
+	}
+	return loong64BitField(v.AuxInt)
+}
+
 // long form print.  v# = opcode <type> [aux] args [: reg] (names)
 func (v *Value) LongString() string {
 	if v == nil {
@@ -194,6 +201,10 @@ func (v *Value) auxString() string {
 		lsb := v.AuxArm64BitField().getARM64BFlsb()
 		width := v.AuxArm64BitField().getARM64BFwidth()
 		return fmt.Sprintf(" [lsb=%d,width=%d]", lsb, width)
+	case auxLoong64BitField:
+		msb := v.AuxLoong64BitField().getLoong64BFmsb()
+		lsb := v.AuxLoong64BitField().getLoong64BFlsb()
+		return fmt.Sprintf(" [msb=%d,lsb=%d]", msb, lsb)
 	case auxFloat32, auxFloat64:
 		return fmt.Sprintf(" [%g]", v.AuxFloat())
 	case auxString:

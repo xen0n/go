@@ -370,6 +370,7 @@ const (
 
 	// architecture specific aux types
 	auxARM64BitField     // aux is an arm64 bitfield lsb and width packed into auxInt
+	auxLoong64BitField   // aux is a loong64 bitfield msb and lsb packed into auxInt
 	auxS390XRotateParams // aux is a s390x rotate parameters object encoding start bit, end bit and rotate amount
 	auxS390XCCMask       // aux is a s390x 4-bit condition code mask
 	auxS390XCCMaskInt8   // aux is a s390x 4-bit condition code mask, auxInt is a int8 immediate
@@ -531,3 +532,10 @@ func boundsABI(b int64) int {
 // width+lsb<64 for 64-bit variant, width+lsb<32 for 32-bit variant.
 // the meaning of width and lsb are instruction-dependent.
 type arm64BitField int16
+
+// loong64Bitfield is the Go type of Loong64BitField auxInt, which is just
+// (msb<<8)|lsb.
+//
+// It is assumed that msb > lsb, and both components being less than the
+// native wordsize (GRLen in LoongArch ISA manual speak).
+type loong64BitField int16
