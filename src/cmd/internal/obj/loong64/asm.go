@@ -76,6 +76,8 @@ var optab = []Optab{
 	{ASLLV, C_REG, C_NONE, C_NONE, C_REG, C_NONE, 9, 4, 0, 0},
 	{ASLLV, C_REG, C_REG, C_NONE, C_REG, C_NONE, 9, 4, 0, 0},
 	{ACLOW, C_REG, C_NONE, C_NONE, C_REG, C_NONE, 66, 4, 0, 0},
+	{ABSTRINSW, C_SCON, C_NONE, C_SCON, C_REG, C_NONE, 67, 4, 0, 0},
+	{ABSTRINSW, C_SCON, C_REG, C_SCON, C_REG, C_NONE, 67, 4, 0, 0},
 
 	{AADDF, C_FREG, C_NONE, C_NONE, C_FREG, C_NONE, 32, 4, 0, 0},
 	{AADDF, C_FREG, C_REG, C_NONE, C_FREG, C_NONE, 32, 4, 0, 0},
@@ -527,6 +529,11 @@ func span0(ctxt *obj.Link, cursym *obj.LSym, newprog obj.ProgAlloc) {
 func (c *ctxt0) isUnsafePoint(p *obj.Prog) bool {
 	// If p explicitly uses REGTMP, it's unsafe to preempt, because the
 	// preemption sequence clobbers REGTMP.
+	for _, a := range p.RestArgs {
+		if a.Type == obj.TYPE_REG && a.Reg == REGTMP {
+			return true
+		}
+	}
 	return p.From.Reg == REGTMP || p.To.Reg == REGTMP || p.Reg == REGTMP
 }
 
@@ -762,6 +769,20 @@ func (c *ctxt0) oplook(p *obj.Prog) *Optab {
 	a2 := C_NONE
 	if p.Reg != 0 {
 		a2 = C_REG
+	}
+	// Special-case the BSTR instructions, that have their source register
+	// operand in RestArgs[1] (if present) instead of Reg, in order to
+	// preserve ergonomic operand order in asm sources.
+	switch p.As {
+	case ABSTRINSW, ABSTRPICKW, ABSTRINSV, ABSTRPICKV:
+		if len(p.RestArgs) > 1 {
+			a2 = int(p.RestArgs[1].Class)
+			if a2 == 0 {
+				a2 = c.aclass(&p.RestArgs[1].Addr) + 1
+				p.RestArgs[1].Class = int8(a2)
+			}
+			a2--
+		}
 	}
 
 	// 2nd destination operand
@@ -1151,6 +1172,11 @@ func buildop(ctxt *obj.Link) {
 			opset(ACRCCWHW, r0)
 			opset(ACRCCWWW, r0)
 			opset(ACRCCWVW, r0)
+
+		case ABSTRINSW:
+			opset(ABSTRPICKW, r0)
+			opset(ABSTRINSV, r0)
+			opset(ABSTRPICKV, r0)
 		}
 	}
 }
@@ -1176,6 +1202,14 @@ func OP_RRR(op uint32, r1 uint32, r2 uint32, r3 uint32) uint32 {
 
 func OP_RRRR(op uint32, r1 uint32, r2 uint32, r3 uint32, r4 uint32) uint32 {
 	return op | (r1&0x1F)<<15 | (r2&0x1F)<<10 | (r3&0x1F)<<5 | (r4 & 0x1F)
+}
+
+func OP_I5I5RR(op uint32, imm1 uint32, imm2 uint32, r1 uint32, r2 uint32) uint32 {
+	return op | (imm1&0x1F)<<16 | (imm2 & 0x1F << 10) | (r1&0x1F)<<5 | (r2 & 0x1F)
+}
+
+func OP_I6I6RR(op uint32, imm1 uint32, imm2 uint32, r1 uint32, r2 uint32) uint32 {
+	return op | (imm1&0x3F)<<16 | (imm2 & 0x3F << 10) | (r1&0x1F)<<5 | (r2 & 0x1F)
 }
 
 // r2 -> rj
@@ -1734,6 +1768,32 @@ func (c *ctxt0) asmout(p *obj.Prog, o *Optab, out []uint32) {
 
 	case 66: // clo.w r1, r2
 		o1 = OP_RR(c.oprr(p.As), uint32(p.From.Reg), uint32(p.To.Reg))
+
+	case 67: // BSTRINSW $msb, $lsb, [rj], rd ==> bstrins.w rd, rj, msb, lsb
+		// From: msb
+		// RestArgs[0]: lsb
+		// RestArgs[1]: rj (or absent)
+		// To: rd (or also rj)
+		//
+		// The official LoongArch assembly syntax has the two immediate
+		// operands' position swapped, so our syntax actually matches
+		// the instruction word layout.
+		imm1 := uint32(c.regoff(&p.From))
+		imm2 := uint32(c.regoff(&p.RestArgs[0].Addr))
+		var r uint32
+		if len(p.RestArgs) > 1 {
+			r = uint32(p.RestArgs[1].Reg)
+		} else {
+			r = uint32(p.To.Reg)
+		}
+		switch p.As {
+		case ABSTRINSW, ABSTRPICKW:
+			o1 = OP_I5I5RR(c.opiirr(p.As), imm1, imm2, r, uint32(p.To.Reg))
+		case ABSTRINSV, ABSTRPICKV:
+			o1 = OP_I6I6RR(c.opiirr(p.As), imm1, imm2, r, uint32(p.To.Reg))
+		default:
+			c.ctxt.Diag("unknown bstr insn\n%v", p)
+		}
 	}
 
 	out[0] = o1
@@ -2184,6 +2244,22 @@ func (c *ctxt0) opirr(a obj.As) uint32 {
 	} else {
 		c.ctxt.Diag("bad irr opcode %v", a)
 	}
+	return 0
+}
+
+func (c *ctxt0) opiirr(a obj.As) uint32 {
+	switch a {
+	case ABSTRINSW:
+		return 0b000000_0001_1_00000_0_00000_00000_00000
+	case ABSTRPICKW:
+		return 0b000000_0001_1_00000_1_00000_00000_00000
+	case ABSTRINSV:
+		return 0b000000_0010_000000_000000_00000_00000
+	case ABSTRPICKV:
+		return 0b000000_0011_000000_000000_00000_00000
+	}
+
+	c.ctxt.Diag("bad iirr opcode %v", a)
 	return 0
 }
 
