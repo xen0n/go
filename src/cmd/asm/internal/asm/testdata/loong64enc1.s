@@ -164,6 +164,15 @@ lable2:
 	BREAK				// 00002a00
 	UNDEF				// 00002a00
 
+	BSTRINSW	$31, $30, R5		// a5787f00
+	BSTRINSW	$31, $30, R4, R5	// 85787f00
+	BSTRPICKW	$31, $30, R5		// a5f87f00
+	BSTRPICKW	$31, $30, R4, R5	// 85f87f00
+	BSTRINSV	$63, $62, R5		// a5f8bf00
+	BSTRINSV	$63, $62, R4, R5	// 85f8bf00
+	BSTRPICKV	$63, $62, R5		// a5f8ff00
+	BSTRPICKV	$63, $62, R4, R5	// 85f8ff00
+
 	// mul
 	MUL	R4, R5	  		// a5101c00
 	MUL	R4, R5, R6	  	// a6101c00
