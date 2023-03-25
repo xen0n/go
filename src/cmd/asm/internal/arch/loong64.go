@@ -55,6 +55,20 @@ func IsLoong64RDTIME(op obj.As) bool {
 	return false
 }
 
+// IsLoong64BSTR reports whether the op (as defined by an loong64.A* constant)
+// is one of the "bit-string" manipulation instructions that require special
+// handling.
+func IsLoong64BSTR(op obj.As) bool {
+	switch op {
+	case loong64.ABSTRINSW,
+		loong64.ABSTRPICKW,
+		loong64.ABSTRINSV,
+		loong64.ABSTRPICKV:
+		return true
+	}
+	return false
+}
+
 func loong64RegisterNumber(name string, n int16) (int16, bool) {
 	switch name {
 	case "F":
