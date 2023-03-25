@@ -664,6 +664,14 @@ func (p *Parser) asmInstruction(op obj.As, cond string, a []obj.Addr) {
 			prog.Reg = p.getRegister(prog, op, &a[1])
 			prog.To = a[2]
 		case sys.Loong64:
+			if arch.IsLoong64BSTR(op) {
+				// a[0] and a[1] must be constants, a[2] must
+				// be a register
+				prog.From = a[0]
+				prog.SetRestArgs([]obj.Addr{a[1]})
+				prog.To = a[2]
+				break
+			}
 			prog.From = a[0]
 			prog.Reg = p.getRegister(prog, op, &a[1])
 			prog.To = a[2]
@@ -816,6 +824,14 @@ func (p *Parser) asmInstruction(op obj.As, cond string, a []obj.Addr) {
 			break
 		}
 		if p.arch.Family == sys.Loong64 {
+			if arch.IsLoong64BSTR(op) {
+				// a[0] and a[1] must be constants
+				// a[2] and a[3] must be registers
+				prog.From = a[0]
+				prog.SetRestArgs([]obj.Addr{a[1], a[2]})
+				prog.To = a[3]
+				break
+			}
 			prog.From = a[0]
 			prog.Reg = p.getRegister(prog, op, &a[1])
 			prog.SetRestArgs([]obj.Addr{a[2]})
