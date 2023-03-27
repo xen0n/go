@@ -4028,6 +4028,27 @@ func rewriteValueLOONG64_OpLOONG64SUBV(v *Value) bool {
 		v.AddArg(x)
 		return true
 	}
+	// match: (SUBV (MOVVconst [c]) (NEGV (SUBVconst [d] x)))
+	// result: (ADDVconst [c-d] x)
+	for {
+		if v_0.Op != OpLOONG64MOVVconst {
+			break
+		}
+		c := auxIntToInt64(v_0.AuxInt)
+		if v_1.Op != OpLOONG64NEGV {
+			break
+		}
+		v_1_0 := v_1.Args[0]
+		if v_1_0.Op != OpLOONG64SUBVconst {
+			break
+		}
+		d := auxIntToInt64(v_1_0.AuxInt)
+		x := v_1_0.Args[0]
+		v.reset(OpLOONG64ADDVconst)
+		v.AuxInt = int64ToAuxInt(c - d)
+		v.AddArg(x)
+		return true
+	}
 	return false
 }
 func rewriteValueLOONG64_OpLOONG64SUBVconst(v *Value) bool {
