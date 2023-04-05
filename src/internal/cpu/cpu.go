@@ -71,6 +71,27 @@ var ARM64 struct {
 	_            CacheLinePad
 }
 
+// The booleans in Loong64 contain the correspondingly named cpu feature bit.
+// The struct is padded to avoid false sharing.
+//
+// Some HWCAP/CPUCFG bits are not included because:
+//
+//   - the feature requires codegen cooperation, hence useless at runtime
+//     (LAM, UAL, FPU)
+//   - no public documentation is ever available about the feature, making it
+//     impossible to utilize (COMPLEX, CRYPTO, LBT_MIPS)
+//   - the feature is kernel-only (LVZ)
+var Loong64 struct {
+	_         CacheLinePad
+	HasCPUCFG bool
+	HasLSX    bool
+	HasLASX   bool
+	HasCRC32  bool
+	HasLBTX86 bool
+	HasLBTARM bool
+	_         CacheLinePad
+}
+
 var MIPS64X struct {
 	_      CacheLinePad
 	HasMSA bool // MIPS SIMD architecture
