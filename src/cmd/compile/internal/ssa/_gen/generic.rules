@@ -2703,3 +2703,89 @@
 (RotateLeft(64|32|16|8) (RotateLeft(64|32|16|8) x c) d) && c.Type.Size() == 4 && d.Type.Size() == 4 => (RotateLeft(64|32|16|8) x (Add32 <c.Type> c d))
 (RotateLeft(64|32|16|8) (RotateLeft(64|32|16|8) x c) d) && c.Type.Size() == 2 && d.Type.Size() == 2 => (RotateLeft(64|32|16|8) x (Add16 <c.Type> c d))
 (RotateLeft(64|32|16|8) (RotateLeft(64|32|16|8) x c) d) && c.Type.Size() == 1 && d.Type.Size() == 1 => (RotateLeft(64|32|16|8) x (Add8  <c.Type> c d))
+
+// Ctz simplifications.
+// CtzNN(x) == NN => x == 0
+(Eq(64|32|16|8) (Const(64|32|16|8) <t> [64]) (Ctz64 x)) && config.PtrSize == 8 => (Eq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+(Eq(64|32|16|8) (Const(64|32|16|8) <t> [32]) (Ctz32 x)) => (Eq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+(Eq(64|32|16|8) (Const(64|32|16|8) <t> [16]) (Ctz16 x)) => (Eq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+(Eq(64|32|16|8) (Const(64|32|16|8) <t> [8])  (Ctz8  x)) => (Eq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+
+// CtzNN(x) != NN => x != 0
+(Neq(64|32|16|8) (Const(64|32|16|8) <t> [64]) (Ctz64 x)) && config.PtrSize == 8 => (Neq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+(Neq(64|32|16|8) (Const(64|32|16|8) <t> [32]) (Ctz32 x)) => (Neq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+(Neq(64|32|16|8) (Const(64|32|16|8) <t> [16]) (Ctz16 x)) => (Neq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+(Neq(64|32|16|8) (Const(64|32|16|8) <t> [8])  (Ctz8  x)) => (Neq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+
+// CtzNN(x) < NN => x != 0
+(Less(64|32|16|8) (Ctz64 x) (Const(64|32|16|8) <t> [64])) && config.PtrSize == 8 => (Neq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+(Less(64|32|16|8) (Ctz32 x) (Const(64|32|16|8) <t> [32])) => (Neq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+(Less(64|32|16|8) (Ctz16 x) (Const(64|32|16|8) <t> [16])) => (Neq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+(Less(64|32|16|8) (Ctz8  x) (Const(64|32|16|8) <t> [8]))  => (Neq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+
+// CtzNN(x) >= NN => x == 0
+(Leq(64|32|16|8)  (Const(64|32|16|8) <t> [64]) (Ctz64 x)) && config.PtrSize == 8 => (Eq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+(Leq(64|32|16|8)  (Const(64|32|16|8) <t> [32]) (Ctz32 x)) => (Eq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+(Leq(64|32|16|8)  (Const(64|32|16|8) <t> [16]) (Ctz16 x)) => (Eq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+(Leq(64|32|16|8)  (Const(64|32|16|8) <t> [8])  (Ctz8  x)) => (Eq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+
+// CtzNN(x) <= NN - 1 => x != 0
+(Leq(64|32|16|8) (Ctz64 x) (Const(64|32|16|8) <t> [63])) && config.PtrSize == 8 => (Neq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+(Leq(64|32|16|8) (Ctz32 x) (Const(64|32|16|8) <t> [31])) => (Neq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+(Leq(64|32|16|8) (Ctz16 x) (Const(64|32|16|8) <t> [15])) => (Neq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+(Leq(64|32|16|8) (Ctz8  x) (Const(64|32|16|8) <t> [7]))  => (Neq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+
+// CtzNN(x) > NN - 1 => x == 0
+(Less(64|32|16|8) (Const(64|32|16|8) <t> [63]) (Ctz64 x)) && config.PtrSize == 8 => (Eq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+(Less(64|32|16|8) (Const(64|32|16|8) <t> [31]) (Ctz32 x)) => (Eq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+(Less(64|32|16|8) (Const(64|32|16|8) <t> [15]) (Ctz16 x)) => (Eq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+(Less(64|32|16|8) (Const(64|32|16|8) <t> [7])  (Ctz8  x)) => (Eq(64|32|16|8) (Const(64|32|16|8) <t> [0]) x)
+
+// CtzNN(x) == c && c > NN => false
+(Eq(64|32|16|8) (Const(64|32|16|8) <t> [c]) (Ctz64 x)) && c > 64 => (ConstBool [false])
+(Eq(64|32|16|8) (Const(64|32|16|8) <t> [c]) (Ctz32 x)) && c > 32 => (ConstBool [false])
+(Eq(64|32|16|8) (Const(64|32|16|8) <t> [c]) (Ctz16 x)) && c > 16 => (ConstBool [false])
+(Eq(64|32|16|8) (Const(64|32|16|8) <t> [c]) (Ctz8  x)) && c >  8 => (ConstBool [false])
+
+// CtzNN(x) != c && c > NN => true
+(Neq(64|32|16|8) (Const(64|32|16|8) <t> [c]) (Ctz64 x)) && c > 64 => (ConstBool [false])
+(Neq(64|32|16|8) (Const(64|32|16|8) <t> [c]) (Ctz32 x)) && c > 32 => (ConstBool [false])
+(Neq(64|32|16|8) (Const(64|32|16|8) <t> [c]) (Ctz16 x)) && c > 16 => (ConstBool [false])
+(Neq(64|32|16|8) (Const(64|32|16|8) <t> [c]) (Ctz8  x)) && c >  8 => (ConstBool [false])
+
+// CtzNN(x) <= c && c >= NN => true
+// CtzNN(x) < c && c > NN => true
+// CtzNN(x) >= c && c > NN => false
+// CtzNN(x) > NN && c >= NN => false
+(Leq(64|64U)  (Ctz64 x) (Const64 [c])) && c >= 64 => (ConstBool [true])
+(Leq(64|64U)  (Ctz32 x) (Const64 [c])) && c >= 32 => (ConstBool [true])
+(Leq(64|64U)  (Ctz16 x) (Const64 [c])) && c >= 16 => (ConstBool [true])
+(Leq(64|64U)  (Ctz8  x) (Const64 [c])) && c >= 8  => (ConstBool [true])
+(Leq(32|32U)  (Ctz64 x) (Const32 [c])) && c >= 64 => (ConstBool [true])
+(Leq(32|32U)  (Ctz32 x) (Const32 [c])) && c >= 32 => (ConstBool [true])
+(Leq(32|32U)  (Ctz16 x) (Const32 [c])) && c >= 16 => (ConstBool [true])
+(Leq(32|32U)  (Ctz8  x) (Const32 [c])) && c >= 8  => (ConstBool [true])
+(Less(64|64U) (Ctz64 x) (Const64 [c])) && c >  64 => (ConstBool [true])
+(Less(64|64U) (Ctz32 x) (Const64 [c])) && c >  32 => (ConstBool [true])
+(Less(64|64U) (Ctz16 x) (Const64 [c])) && c >  16 => (ConstBool [true])
+(Less(64|64U) (Ctz8  x) (Const64 [c])) && c >  8  => (ConstBool [true])
+(Less(32|32U) (Ctz64 x) (Const32 [c])) && c >  64 => (ConstBool [true])
+(Less(32|32U) (Ctz32 x) (Const32 [c])) && c >  32 => (ConstBool [true])
+(Less(32|32U) (Ctz16 x) (Const32 [c])) && c >  16 => (ConstBool [true])
+(Less(32|32U) (Ctz8  x) (Const32 [c])) && c >  8  => (ConstBool [true])
+(Leq(64|64U)  (Const64 [c]) (Ctz64 x)) && c >  64 => (ConstBool [false])
+(Leq(64|64U)  (Const64 [c]) (Ctz32 x)) && c >  32 => (ConstBool [false])
+(Leq(64|64U)  (Const64 [c]) (Ctz16 x)) && c >  16 => (ConstBool [false])
+(Leq(64|64U)  (Const64 [c]) (Ctz8  x)) && c >  8  => (ConstBool [false])
+(Leq(32|32U)  (Const32 [c]) (Ctz64 x)) && c >  64 => (ConstBool [false])
+(Leq(32|32U)  (Const32 [c]) (Ctz32 x)) && c >  32 => (ConstBool [false])
+(Leq(32|32U)  (Const32 [c]) (Ctz16 x)) && c >  16 => (ConstBool [false])
+(Leq(32|32U)  (Const32 [c]) (Ctz8  x)) && c >  8  => (ConstBool [false])
+(Less(64|64U) (Const64 [c]) (Ctz64 x)) && c >= 64 => (ConstBool [false])
+(Less(64|64U) (Const64 [c]) (Ctz32 x)) && c >= 32 => (ConstBool [false])
+(Less(64|64U) (Const64 [c]) (Ctz16 x)) && c >= 16 => (ConstBool [false])
+(Less(64|64U) (Const64 [c]) (Ctz8  x)) && c >= 8  => (ConstBool [false])
+(Less(32|32U) (Const32 [c]) (Ctz64 x)) && c >= 64 => (ConstBool [false])
+(Less(32|32U) (Const32 [c]) (Ctz32 x)) && c >= 32 => (ConstBool [false])
+(Less(32|32U) (Const32 [c]) (Ctz16 x)) && c >= 16 => (ConstBool [false])
+(Less(32|32U) (Const32 [c]) (Ctz8  x)) && c >= 8  => (ConstBool [false])
