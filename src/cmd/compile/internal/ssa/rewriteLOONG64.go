@@ -3506,6 +3506,8 @@ func rewriteValueLOONG64_OpLOONG64ROTRV(v *Value) bool {
 func rewriteValueLOONG64_OpLOONG64SGT(v *Value) bool {
 	v_1 := v.Args[1]
 	v_0 := v.Args[0]
+	b := v.Block
+	typ := &b.Func.Config.Types
 	// match: (SGT (MOVVconst [c]) x)
 	// cond: is32Bit(c)
 	// result: (SGTconst [c] x)
@@ -3521,6 +3523,26 @@ func rewriteValueLOONG64_OpLOONG64SGT(v *Value) bool {
 		v.reset(OpLOONG64SGTconst)
 		v.AuxInt = int64ToAuxInt(c)
 		v.AddArg(x)
+		return true
+	}
+	// match: (SGT x (MOVVconst [c]))
+	// cond: is32Bit(c+1)
+	// result: (XORconst [1] (SGTconst [c+1] x))
+	for {
+		x := v_0
+		if v_1.Op != OpLOONG64MOVVconst {
+			break
+		}
+		c := auxIntToInt64(v_1.AuxInt)
+		if !(is32Bit(c + 1)) {
+			break
+		}
+		v.reset(OpLOONG64XORconst)
+		v.AuxInt = int64ToAuxInt(1)
+		v0 := b.NewValue0(v.Pos, OpLOONG64SGTconst, typ.Bool)
+		v0.AuxInt = int64ToAuxInt(c + 1)
+		v0.AddArg(x)
+		v.AddArg(v0)
 		return true
 	}
 	// match: (SGT x x)
@@ -3539,6 +3561,8 @@ func rewriteValueLOONG64_OpLOONG64SGT(v *Value) bool {
 func rewriteValueLOONG64_OpLOONG64SGTU(v *Value) bool {
 	v_1 := v.Args[1]
 	v_0 := v.Args[0]
+	b := v.Block
+	typ := &b.Func.Config.Types
 	// match: (SGTU (MOVVconst [c]) x)
 	// cond: is32Bit(c)
 	// result: (SGTUconst [c] x)
@@ -3554,6 +3578,26 @@ func rewriteValueLOONG64_OpLOONG64SGTU(v *Value) bool {
 		v.reset(OpLOONG64SGTUconst)
 		v.AuxInt = int64ToAuxInt(c)
 		v.AddArg(x)
+		return true
+	}
+	// match: (SGTU x (MOVVconst [c]))
+	// cond: is32Bit(c+1)
+	// result: (XORconst [1] (SGTUconst [c+1] x))
+	for {
+		x := v_0
+		if v_1.Op != OpLOONG64MOVVconst {
+			break
+		}
+		c := auxIntToInt64(v_1.AuxInt)
+		if !(is32Bit(c + 1)) {
+			break
+		}
+		v.reset(OpLOONG64XORconst)
+		v.AuxInt = int64ToAuxInt(1)
+		v0 := b.NewValue0(v.Pos, OpLOONG64SGTUconst, typ.Bool)
+		v0.AuxInt = int64ToAuxInt(c + 1)
+		v0.AddArg(x)
+		v.AddArg(v0)
 		return true
 	}
 	// match: (SGTU x x)

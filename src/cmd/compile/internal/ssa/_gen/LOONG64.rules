@@ -588,8 +588,8 @@
 (ROTR x (MOVVconst [c]))  => (ROTRconst x [c&31])
 (ROTRV x (MOVVconst [c])) => (ROTRVconst x [c&63])
 
-(SGT  (MOVVconst [c]) x) && is32Bit(c) => (SGTconst  [c] x)
-(SGTU (MOVVconst [c]) x) && is32Bit(c) => (SGTUconst [c] x)
+(S(GT|GTU) (MOVVconst [c]) x) && is32Bit(c) => (S(GT|GTU)const [c] x)
+(S(GT|GTU) x (MOVVconst [c])) && is32Bit(c+1) => (XORconst [1] (S(GT|GTU)const [c+1] x))
 
 // mul by constant
 (MULV x (MOVVconst [-1])) => (NEGV x)
