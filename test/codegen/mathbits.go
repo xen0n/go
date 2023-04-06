@@ -323,6 +323,45 @@ func TrailingZeros64Subtract(n uint64) int {
 	return bits.TrailingZeros64(1 - n)
 }
 
+func TrailingZeros64Eq(n uint64) bool {
+	// amd64:-"BSFQ",-"TZCNTQ"
+	// arm64:-"CLZ"
+	// s390x:-"FLOGR"
+	// ppc64x:-"POPCNTD",-"CNTTZD"
+	// wasm:-"I64Ctz"
+	return bits.TrailingZeros64(n) == 64
+}
+
+func TrailingZeros64Neq(n uint64) bool {
+	// amd64:-"BSFQ",-"TZCNTQ"
+	// arm64:-"CLZ"
+	// s390x:-"FLOGR"
+	// ppc64x:-"POPCNTD",-"CNTTZD"
+	// wasm:-"I64Ctz"
+	return bits.TrailingZeros64(n) != 64
+}
+
+func TrailingZeros64Less(n uint64) bool {
+	// amd64:-"BSFQ",-"TZCNTQ"
+	// 386:-"BSFL"
+	// arm64:-"CLZ"
+	// s390x:-"FLOGR"
+	// ppc64x:-"POPCNTD",-"CNTTZD"
+	// wasm:-"I64Ctz"
+	return bits.TrailingZeros64(n) < 65
+}
+
+func TrailingZeros64Leq(n uint64) bool {
+	// amd64/v1,amd64/v2:-"BSFQ"
+	// amd64/v3:-"TZCNTQ"
+	// 386:-"BSFL"
+	// arm64:-"CLZ"
+	// s390x:-"FLOGR"
+	// ppc64x:-"POPCNTD",-"CNTTZD"
+	// wasm:-"I64Ctz"
+	return bits.TrailingZeros64(n) <= 64
+}
+
 func TrailingZeros32(n uint32) int {
 	// amd64/v1,amd64/v2:"BTSQ\\t\\$32","BSFQ"
 	// amd64/v3:"TZCNTL"
@@ -335,6 +374,58 @@ func TrailingZeros32(n uint32) int {
 	// ppc64x/power9: "CNTTZW"
 	// wasm:"I64Ctz"
 	return bits.TrailingZeros32(n)
+}
+
+func TrailingZeros32Eq(n uint32) bool {
+	// amd64/v1,amd64/v2:-"BSFQ"
+	// amd64/v3:-"TZCNTL"
+	// 386:-"BSFL"
+	// arm:-"CLZ"
+	// arm64:-"CLZW"
+	// s390x:-"FLOGR"
+	// ppc64x/power8:-"POPCNTW"
+	// ppc64x/power9:-"CNTTZW"
+	// wasm:-"I64Ctz"
+	return bits.TrailingZeros32(n) == 32
+}
+
+func TrailingZeros32Neq(n uint32) bool {
+	// amd64/v1,amd64/v2:-"BSFQ"
+	// amd64/v3:-"TZCNTL"
+	// 386:-"BSFL"
+	// arm:-"CLZ"
+	// arm64:-"CLZW"
+	// s390x:-"FLOGR"
+	// ppc64x/power8:-"POPCNTW"
+	// ppc64x/power9:-"CNTTZW"
+	// wasm:-"I64Ctz"
+	return bits.TrailingZeros32(n) != 32
+}
+
+func TrailingZeros32Less(n uint32) bool {
+	// amd64/v1,amd64/v2:-"BSFQ"
+	// amd64/v3:-"TZCNTL"
+	// 386:-"BSFL"
+	// arm:-"CLZ"
+	// arm64:-"CLZW"
+	// s390x:-"FLOGR"
+	// ppc64x/power8:-"POPCNTW"
+	// ppc64x/power9:-"CNTTZW"
+	// wasm:-"I64Ctz"
+	return bits.TrailingZeros32(n) < 33
+}
+
+func TrailingZeros32Leq(n uint32) bool {
+	// amd64/v1,amd64/v2:-"BSFQ"
+	// amd64/v3:-"TZCNTL"
+	// 386:-"BSFL"
+	// arm:-"CLZ"
+	// arm64:-"CLZW"
+	// s390x:-"FLOGR"
+	// ppc64x/power8:-"POPCNTW"
+	// ppc64x/power9:-"CNTTZW"
+	// wasm:-"I64Ctz"
+	return bits.TrailingZeros32(n) <= 32
 }
 
 func TrailingZeros16(n uint16) int {
@@ -350,6 +441,54 @@ func TrailingZeros16(n uint16) int {
 	return bits.TrailingZeros16(n)
 }
 
+func TrailingZeros16Eq(n uint16) bool {
+	// amd64:-"BSFL"
+	// 386:-"BSFL\t"
+	// arm:-"CLZ"
+	// arm64:-"CLZW"
+	// s390x:-"FLOGR"
+	// ppc64x/power8:-"POPCNTD"
+	// ppc64x/power9:-"CNTTZD"
+	// wasm:-"I64Ctz"
+	return bits.TrailingZeros16(n) == 16
+}
+
+func TrailingZeros16Neq(n uint16) bool {
+	// amd64:-"BSFL"
+	// 386:-"BSFL\t"
+	// arm:-"CLZ"
+	// arm64:-"CLZW"
+	// s390x:-"FLOGR"
+	// ppc64x/power8:-"POPCNTD"
+	// ppc64x/power9:-"CNTTZD"
+	// wasm:-"I64Ctz"
+	return bits.TrailingZeros16(n) != 16
+}
+
+func TrailingZeros16Less(n uint16) bool {
+	// amd64:-"BSFL"
+	// 386:-"BSFL\t"
+	// arm:-"CLZ"
+	// arm64:-"CLZW"
+	// s390x:-"FLOGR"
+	// ppc64x/power8:-"POPCNTD"
+	// ppc64x/power9:-"CNTTZD"
+	// wasm:-"I64Ctz"
+	return bits.TrailingZeros16(n) < 17
+}
+
+func TrailingZeros16Leq(n uint16) bool {
+	// amd64:-"BSFL"
+	// 386:-"BSFL\t"
+	// arm:-"CLZ"
+	// arm64:-"CLZW"
+	// s390x:-"FLOGR"
+	// ppc64x/power8:-"POPCNTD"
+	// ppc64x/power9:-"CNTTZD"
+	// wasm:-"I64Ctz"
+	return bits.TrailingZeros16(n) <= 16
+}
+
 func TrailingZeros8(n uint8) int {
 	// amd64:"BSFL","BTSL\\t\\$8"
 	// 386:"BSFL"
@@ -359,6 +498,46 @@ func TrailingZeros8(n uint8) int {
 	// s390x:"FLOGR","OR\t\\$256"
 	// wasm:"I64Ctz"
 	return bits.TrailingZeros8(n)
+}
+
+func TrailingZeros8Eq(n uint8) bool {
+	// amd64:-"BSFL"
+	// 386:-"BSFL"
+	// arm:-"CLZ"
+	// arm64:-"CLZW"
+	// s390x:-"FLOGR"
+	// wasm:-"I64Ctz"
+	return bits.TrailingZeros8(n) == 8
+}
+
+func TrailingZeros8Neq(n uint8) bool {
+	// amd64:-"BSFL"
+	// 386:-"BSFL"
+	// arm:-"CLZ"
+	// arm64:-"CLZW"
+	// s390x:-"FLOGR"
+	// wasm:-"I64Ctz"
+	return bits.TrailingZeros8(n) != 8
+}
+
+func TrailingZeros8Less(n uint8) bool {
+	// amd64:-"BSFL"
+	// 386:-"BSFL"
+	// arm:-"CLZ"
+	// arm64:-"CLZW"
+	// s390x:-"FLOGR"
+	// wasm:-"I64Ctz"
+	return bits.TrailingZeros8(n) < 9
+}
+
+func TrailingZeros8Leq(n uint8) bool {
+	// amd64:-"BSFL"
+	// 386:-"BSFL"
+	// arm:-"CLZ"
+	// arm64:-"CLZW"
+	// s390x:-"FLOGR"
+	// wasm:-"I64Ctz"
+	return bits.TrailingZeros8(n) <= 8
 }
 
 // IterateBitsNN checks special handling of TrailingZerosNN when the input is known to be non-zero.
