@@ -12,6 +12,12 @@ TEXT ·castagnoliUpdate(SB),NOSPLIT,$0-36
 	MOVV	p+8(FP), R5		// a1 = data pointer
 	MOVV	p_len+16(FP), R6	// a2 = len(p)
 
+	// test asrt
+	MOVV	$100, R12
+	MOVV	$200, R13
+	ASRTLE	R13, R12
+	ASRTGT	R13, R12
+
 	SGT	$8, R6, R12
 	BNE	R12, less_than_8
 	AND	$7, R5, R12
