@@ -169,6 +169,8 @@ var Anames = []string{
 	"FNMADDD",
 	"FNMSUBF",
 	"FNMSUBD",
+	"ASRTLE",
+	"ASRTGT",
 	"RDTIMELW",
 	"RDTIMEHW",
 	"RDTIMED",

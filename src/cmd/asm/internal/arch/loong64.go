@@ -44,6 +44,14 @@ func IsLoong64MUL(op obj.As) bool {
 	return false
 }
 
+func IsLoong64Assert(op obj.As) bool {
+	switch op {
+	case loong64.AASRTLE, loong64.AASRTGT:
+		return true
+	}
+	return false
+}
+
 // IsLoong64RDTIME reports whether the op (as defined by an loong64.A*
 // constant) is one of the RDTIMELW/RDTIMEHW/RDTIMED instructions that
 // require special handling.

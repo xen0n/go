@@ -637,7 +637,8 @@ func (p *Parser) asmInstruction(op obj.As, cond string, a []obj.Addr) {
 				break
 			}
 		} else if p.arch.Family == sys.Loong64 {
-			if arch.IsLoong64CMP(op) {
+			if arch.IsLoong64CMP(op) || arch.IsLoong64Assert(op) {
+				// both operands are inputs
 				prog.From = a[0]
 				prog.Reg = p.getRegister(prog, op, &a[1])
 				break

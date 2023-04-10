@@ -351,6 +351,7 @@ var optab = []Optab{
 	{ABREAK, C_REG, C_NONE, C_NONE, C_SOREG, C_NONE, 7, 4, REGZERO, 0},
 	{ABREAK, C_NONE, C_NONE, C_NONE, C_NONE, C_NONE, 5, 4, 0, 0},
 
+	{AASRTLE, C_REG, C_REG, C_NONE, C_NONE, C_NONE, 2, 4, 0, 0},
 	{ARDTIMELW, C_NONE, C_NONE, C_NONE, C_REG, C_REG, 62, 4, 0, 0},
 	{ARDTIMEHW, C_NONE, C_NONE, C_NONE, C_REG, C_REG, 62, 4, 0, 0},
 	{ARDTIMED, C_NONE, C_NONE, C_NONE, C_REG, C_REG, 62, 4, 0, 0},
@@ -1201,6 +1202,9 @@ func buildop(ctxt *obj.Link) {
 		case ATEQ:
 			opset(ATNE, r0)
 
+		case AASRTLE:
+			opset(AASRTGT, r0)
+
 		case AMASKEQZ:
 			opset(AMASKNEZ, r0)
 
@@ -1847,6 +1851,10 @@ func (c *ctxt0) regoff(a *obj.Addr) int32 {
 
 func (c *ctxt0) oprrr(a obj.As) uint32 {
 	switch a {
+	case AASRTLE:
+		return 0x2 << 15
+	case AASRTGT:
+		return 0x3 << 15
 	case AADD:
 		return 0x20 << 15
 	case AADDU:

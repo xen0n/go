@@ -434,6 +434,8 @@ const (
 	AFNMSUBD
 
 	// 2.2.10. Other Miscellaneous Instructions
+	AASRTLE
+	AASRTGT
 	ARDTIMELW
 	ARDTIMEHW
 	ARDTIMED
