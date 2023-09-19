@@ -182,7 +182,9 @@ func encode(a obj.As) *inst {
 	case AFENCE:
 		return &inst{0xf, 0x0, 0x0, 0, 0x0}
 	case AFENCETSO:
-		return &inst{0xf, 0x0, 0x13, -1997, 0x41}
+		// https://github.com/revyos/revyos/issues/22
+		// encode "fence rw, rw" instead
+		return &inst{0xf, 0x0, 0x13, 51, 0x1}
 	case AFEQD:
 		return &inst{0x53, 0x2, 0x0, -1504, 0x51}
 	case AFEQQ:
