@@ -26,3 +26,23 @@ func IsRISCV64AMO(op obj.As) bool {
 	}
 	return false
 }
+
+// IsRISCV64XThead reports whether the op (as defined by a riscv.A*
+// constant) is one of the XThead extensions instructions that requires
+// special handling.
+func IsRISCV64XThead(op obj.As) bool {
+	switch op {
+	case
+		// 3. XTheadCmo provides instructions for cache management.
+		riscv.ATHDCACHECALL, riscv.ATHDCACHECIALL, riscv.ATHDCACHEIALL, riscv.ATHDCACHECPA,
+		riscv.ATHDCACHECIPA, riscv.ATHDCACHEIPA, riscv.ATHDCACHECVA, riscv.ATHDCACHECIVA,
+		riscv.ATHDCACHEIVA, riscv.ATHDCACHECSW, riscv.ATHDCACHECISW, riscv.ATHDCACHEISW,
+		riscv.ATHDCACHECPAL1, riscv.ATHDCACHECVAL1, riscv.ATHICACHEIALL, riscv.ATHICACHEIALLS,
+		riscv.ATHICACHEIPA, riscv.ATHICACHEIVA, riscv.ATHL2CACHECALL, riscv.ATHL2CACHECIALL,
+		riscv.ATHL2CACHEIALL, riscv.ATHSFENCEVMAS,
+		// 4. XTheadSync provides instructions for multi-processor synchronization.
+		riscv.ATHSYNC, riscv.ATHSYNCS, riscv.ATHSYNCI, riscv.ATHSYNCIS:
+		return true
+	}
+	return false
+}

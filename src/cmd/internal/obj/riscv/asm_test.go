@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
 )
 
@@ -209,5 +210,59 @@ func TestBranch(t *testing.T) {
 	cmd.Dir = "testdata/testbranch"
 	if out, err := testenv.CleanCmdEnv(cmd).CombinedOutput(); err != nil {
 		t.Errorf("Branch test failed: %v\n%s", err, out)
+	}
+}
+
+func TestPcalign(t *testing.T) {
+	dir, err := os.MkdirTemp("", "testimmsplit")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(dir)
+	tmpfile := filepath.Join(dir, "x.s")
+	asm := `
+TEXT _stub(SB),$0-0
+	CNOP
+	PCALIGN	$8
+	RET
+`
+	if err := os.WriteFile(tmpfile, []byte(asm), 0644); err != nil {
+		t.Fatal(err)
+	}
+	cmd := exec.Command(testenv.GoToolPath(t), "tool", "asm", "-o", filepath.Join(dir, "x.o"), "-S", tmpfile)
+	cmd.Env = append(os.Environ(), "GOARCH=riscv64", "GOOS=linux")
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Errorf("Build test failed: %v\n%s", err, out)
+	}
+	// The expected instruction sequence after alignment:
+	//    CNOP
+	//    NOP
+	//    CNOP
+	//    RET
+	expected := "01 00 13 00 00 00 01 00 82 80"
+	if !strings.Contains(string(out), expected) {
+		t.Errorf("The pc align test encoding did not meet expectations: %s\n%s", expected, out)
+	}
+
+	// generate a test with invalid use of PCALIGN
+	tmpfile = filepath.Join(dir, "xi.s")
+	invalidAsm := `
+TEXT _stub(SB),$0-0
+	CNOP
+	PCALIGN	$3
+	RET
+`
+	err = os.WriteFile(tmpfile, []byte(invalidAsm), 0644)
+	if err != nil {
+		t.Fatalf("can't write output: %v\n", err)
+	}
+
+	// build test with errors and check for messages
+	cmd = exec.Command(testenv.GoToolPath(t), "tool", "asm", "-o", filepath.Join(dir, "xi.o"), "-S", tmpfile)
+	cmd.Env = append(os.Environ(), "GOARCH=riscv64", "GOOS=linux")
+	out, err = cmd.CombinedOutput()
+	if !strings.Contains(string(out), "alignment value of an instruction must be a power of two and in the range [4, 2048], got 3") {
+		t.Errorf("Invalid alignment not detected for PCALIGN\n")
 	}
 }

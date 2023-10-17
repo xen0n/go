@@ -11,6 +11,14 @@ type inst struct {
 	funct7 uint32
 }
 
+const (
+	OPC_CUSTOM_0 uint32 = 0b0001011
+)
+
+const (
+	THEAD_FUNCT3_CMO uint32 = 0b000
+)
+
 func encode(a obj.As) *inst {
 	switch a {
 	case AADD:
@@ -439,6 +447,63 @@ func encode(a obj.As) *inst {
 		return &inst{0x33, 0x4, 0x0, 0, 0x0}
 	case AXORI:
 		return &inst{0x13, 0x4, 0x0, 0, 0x0}
+
+	// THead Extension ISA
+	// 3. XTheadCmo provides instructions for cache management.
+	case ATHDCACHECALL:
+		return &inst{/* opcode */ OPC_CUSTOM_0, /* funct3 */ THEAD_FUNCT3_CMO, /* rs2 */ 0b00001, /* csr */ 0b00, /* funct7 */ 0b0000000}
+	case ATHDCACHECIALL:
+		return &inst{/* opcode */ OPC_CUSTOM_0, /* funct3 */ THEAD_FUNCT3_CMO, /* rs2 */ 0b00011, /* csr */ 0b00, /* funct7 */ 0b0000000}
+	case ATHDCACHEIALL:
+		return &inst{/* opcode */ OPC_CUSTOM_0, /* funct3 */ THEAD_FUNCT3_CMO, /* rs2 */ 0b00010, /* csr */ 0b00, /* funct7 */ 0b0000000}
+	case ATHDCACHECPA:
+		return &inst{/* opcode */ OPC_CUSTOM_0, /* funct3 */ THEAD_FUNCT3_CMO, /* rs2 */ 0b01001, /* csr */ 0b00, /* funct7 */ 0b0000001}
+	case ATHDCACHECIPA:
+		return &inst{/* opcode */ OPC_CUSTOM_0, /* funct3 */ THEAD_FUNCT3_CMO, /* rs2 */ 0b01011, /* csr */ 0b00, /* funct7 */ 0b0000001}
+	case ATHDCACHEIPA:
+		return &inst{/* opcode */ OPC_CUSTOM_0, /* funct3 */ THEAD_FUNCT3_CMO, /* rs2 */ 0b01010, /* csr */ 0b00, /* funct7 */ 0b0000001}
+	case ATHDCACHECVA:
+		return &inst{/* opcode */ OPC_CUSTOM_0, /* funct3 */ THEAD_FUNCT3_CMO, /* rs2 */ 0b00101, /* csr */ 0b00, /* funct7 */ 0b0000001}
+	case ATHDCACHECIVA:
+		return &inst{/* opcode */ OPC_CUSTOM_0, /* funct3 */ THEAD_FUNCT3_CMO, /* rs2 */ 0b00111, /* csr */ 0b00, /* funct7 */ 0b0000001}
+	case ATHDCACHEIVA:
+		return &inst{/* opcode */ OPC_CUSTOM_0, /* funct3 */ THEAD_FUNCT3_CMO, /* rs2 */ 0b00110, /* csr */ 0b00, /* funct7 */ 0b0000001}
+	case ATHDCACHECSW:
+		return &inst{/* opcode */ OPC_CUSTOM_0, /* funct3 */ THEAD_FUNCT3_CMO, /* rs2 */ 0b00001, /* csr */ 0b00, /* funct7 */ 0b0000001}
+	case ATHDCACHECISW:
+		return &inst{/* opcode */ OPC_CUSTOM_0, /* funct3 */ THEAD_FUNCT3_CMO, /* rs2 */ 0b00011, /* csr */ 0b00, /* funct7 */ 0b0000001}
+	case ATHDCACHEISW:
+		return &inst{/* opcode */ OPC_CUSTOM_0, /* funct3 */ THEAD_FUNCT3_CMO, /* rs2 */ 0b00010, /* csr */ 0b00, /* funct7 */ 0b0000001}
+	case ATHDCACHECPAL1:
+		return &inst{/* opcode */ OPC_CUSTOM_0, /* funct3 */ THEAD_FUNCT3_CMO, /* rs2 */ 0b01000, /* csr */ 0b00, /* funct7 */ 0b0000001}
+	case ATHDCACHECVAL1:
+		return &inst{/* opcode */ OPC_CUSTOM_0, /* funct3 */ THEAD_FUNCT3_CMO, /* rs2 */ 0b00100, /* csr */ 0b00, /* funct7 */ 0b0000001}
+	case ATHICACHEIALL:
+		return &inst{/* opcode */ OPC_CUSTOM_0, /* funct3 */ THEAD_FUNCT3_CMO, /* rs2 */ 0b10000, /* csr */ 0b00, /* funct7 */ 0b0000000}
+	case ATHICACHEIALLS:
+		return &inst{/* opcode */ OPC_CUSTOM_0, /* funct3 */ THEAD_FUNCT3_CMO, /* rs2 */ 0b10001, /* csr */ 0b00, /* funct7 */ 0b0000000}
+	case ATHICACHEIPA:
+		return &inst{/* opcode */ OPC_CUSTOM_0, /* funct3 */ THEAD_FUNCT3_CMO, /* rs2 */ 0b11000, /* csr */ 0b00, /* funct7 */ 0b0000001}
+	case ATHICACHEIVA:
+		return &inst{/* opcode */ OPC_CUSTOM_0, /* funct3 */ THEAD_FUNCT3_CMO, /* rs2 */ 0b10000, /* csr */ 0b00, /* funct7 */ 0b0000001}
+	case ATHL2CACHECALL:
+		return &inst{/* opcode */ OPC_CUSTOM_0, /* funct3 */ THEAD_FUNCT3_CMO, /* rs2 */ 0b10101, /* csr */ 0b00, /* funct7 */ 0b0000000}
+	case ATHL2CACHECIALL:
+		return &inst{/* opcode */ OPC_CUSTOM_0, /* funct3 */ THEAD_FUNCT3_CMO, /* rs2 */ 0b10111, /* csr */ 0b00, /* funct7 */ 0b0000000}
+	case ATHL2CACHEIALL:
+		return &inst{/* opcode */ OPC_CUSTOM_0, /* funct3 */ THEAD_FUNCT3_CMO, /* rs2 */ 0b10110, /* csr */ 0b00, /* funct7 */ 0b0000000}
+
+	// 4. XTheadSync provides instructions for multi-processor synchronization.
+	case ATHSFENCEVMAS:
+		return &inst{/* opcode */ OPC_CUSTOM_0, /* funct3 */ THEAD_FUNCT3_CMO, /* rs2 */ 0b00000, /* csr */ 0b00, /* funct7 */ 0b0000010}
+	case ATHSYNC:
+		return &inst{/* opcode */ OPC_CUSTOM_0, /* funct3 */ THEAD_FUNCT3_CMO, /* rs2 */ 0b11000, /* csr */ 0b00, /* funct7 */ 0b0000000}
+	case ATHSYNCS:
+		return &inst{/* opcode */ OPC_CUSTOM_0, /* funct3 */ THEAD_FUNCT3_CMO, /* rs2 */ 0b11001, /* csr */ 0b00, /* funct7 */ 0b0000000}
+	case ATHSYNCI:
+		return &inst{/* opcode */ OPC_CUSTOM_0, /* funct3 */ THEAD_FUNCT3_CMO, /* rs2 */ 0b11010, /* csr */ 0b00, /* funct7 */ 0b0000000}
+	case ATHSYNCIS:
+		return &inst{/* opcode */ OPC_CUSTOM_0, /* funct3 */ THEAD_FUNCT3_CMO, /* rs2 */ 0b11011, /* csr */ 0b00, /* funct7 */ 0b0000000}
 	}
 	return nil
 }
