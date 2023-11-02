@@ -6,10 +6,10 @@ package riscv
 
 import (
 	"bytes"
-	"exec"
 	"fmt"
 	"internal/testenv"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
