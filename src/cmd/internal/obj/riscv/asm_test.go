@@ -6,6 +6,7 @@ package riscv
 
 import (
 	"bytes"
+	"exec"
 	"fmt"
 	"internal/testenv"
 	"os"
