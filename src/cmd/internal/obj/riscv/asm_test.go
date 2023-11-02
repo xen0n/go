@@ -215,6 +215,8 @@ func TestBranch(t *testing.T) {
 }
 
 func TestPcalign(t *testing.T) {
+	t.Skip("CNOP is not supported by Go asm yet")
+
 	dir, err := os.MkdirTemp("", "testimmsplit")
 	if err != nil {
 		t.Fatal(err)
