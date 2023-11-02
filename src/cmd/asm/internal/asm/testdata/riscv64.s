@@ -181,8 +181,8 @@ start:
 	REMUW	X5, X6, X7				// bb735302
 
 	// 8.2: Load-Reserved/Store-Conditional
-	LRW	(X5), X6				// 2fa30214
-	LRD	(X5), X6				// 2fb30214
+	LRW	(X5), X6				// 0b00a001
+	LRD	(X5), X6				// 0b00a001
 	SCW	X5, (X6), X7				// af23531a
 	SCD	X5, (X6), X7				// af33531a
 
