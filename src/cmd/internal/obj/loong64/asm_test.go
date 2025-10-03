@@ -174,16 +174,12 @@ func a()
 		t.Fatalf("Failed to write file: %v\n", err)
 	}
 
-	// Build generated files.
-	// The long jump is expected to be rejected by asm.
-	cmd := testenv.Command(t, testenv.GoToolPath(t), "build")
+	// Build generated files and run.
+	cmd := testenv.Command(t, testenv.GoToolPath(t), "run")
 	cmd.Dir = dir
 	out, err := cmd.CombinedOutput()
-	if err == nil {
-		t.Errorf("Build unexpectedly succeeded: output: %s", out)
-	}
-	if !bytes.Contains(out, []byte("28-bit jump distance too far")) {
-		t.Errorf("Build failed without expected diagnostics: output: %s", out)
+	if err != nil {
+		t.Errorf("Build and run failed: %v, output: %s", err, out)
 	}
 }
 
@@ -191,7 +187,9 @@ func genLargeCall(buf *bytes.Buffer) {
 	fmt.Fprintln(buf, "TEXT main·a(SB),0,$0-8")
 	fmt.Fprintln(buf, "CALL b(SB)")
 	for i := 0; i <= ((1 << 26) + 26); i++ {
-		fmt.Fprintln(buf, "ADDV $0, R0, R0")
+		// If the call is not correctly encoded, this will make the test program
+		// fail right away.
+		fmt.Fprintln(buf, "BREAK $0")
 	}
 	fmt.Fprintln(buf, "RET")
 	fmt.Fprintln(buf, "TEXT b(SB),0,$0-8")
