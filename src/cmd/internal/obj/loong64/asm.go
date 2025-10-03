@@ -4028,6 +4028,8 @@ func (c *ctxt0) opir(a obj.As) uint32 {
 		return 0x0d << 25
 	case APCADDU12I:
 		return 0x0e << 25
+	case APCADDU18I:
+		return 0x0f << 25
 	}
 	return 0
 }

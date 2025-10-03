@@ -472,6 +472,9 @@ func preprocess(ctxt *obj.Link, cursym *obj.LSym, newprog obj.ProgAlloc) {
 				p.From.Type = obj.TYPE_MEM
 				p.From.Reg = REGSP
 			}
+
+		case AJMP, AJAL:
+			panic("TODO")
 		}
 
 		if p.To.Type == obj.TYPE_REG && p.To.Reg == REGSP && p.Spadj == 0 {

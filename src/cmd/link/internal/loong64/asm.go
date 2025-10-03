@@ -178,7 +178,7 @@ func adddynrel(target *ld.Target, ldr *loader.Loader, syms *ld.ArchSyms, s loade
 	r = relocs.At(rIdx)
 
 	switch r.Type() {
-	case objabi.R_CALLLOONG64:
+	case objabi.R_CALLLOONG64, objabi.R_CALL36LOONG64:
 		if targType != sym.SDYNIMPORT {
 			return true
 		}
@@ -556,6 +556,10 @@ func archreloc(target *ld.Target, ldr *loader.Loader, syms *ld.ArchSyms, r loade
 		}
 		return int64(val&0xfc0003e0 | (((t >> 2) & 0xffff) << 10) | (((t >> 2) & 0x1f0000) >> 16)), noExtReloc, isOk
 
+	case objabi.R_CALL36LOONG64:
+		// pc := xx
+		panic("xx")
+
 	case objabi.R_LOONG64_TLS_IE_HI,
 		objabi.R_LOONG64_TLS_IE_LO:
 		if target.IsPIE() && target.IsElf() {
@@ -600,6 +604,7 @@ func extreloc(target *ld.Target, ldr *loader.Loader, r loader.Reloc, s loader.Sy
 		objabi.R_CONST,
 		objabi.R_GOTOFF,
 		objabi.R_CALLLOONG64,
+		objabi.R_CALL36LOONG64,
 		objabi.R_JMPLOONG64,
 		objabi.R_LOONG64_TLS_IE_HI,
 		objabi.R_LOONG64_TLS_IE_LO:
