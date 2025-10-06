@@ -2189,7 +2189,14 @@ func (c *ctxt0) asmout(p *obj.Prog, o *Optab, out []uint32) {
 	case 11: // jmp lbra
 		v := int32(0)
 		if p.To.Target() != nil {
-			v = int32(p.To.Target().Pc-p.Pc) >> 2
+			distance := p.To.Target().Pc - p.Pc
+			if (distance<<36)>>36 != distance {
+				c.ctxt.Diag("28-bit jump distance too far\n%v", p)
+			}
+			if distance&3 != 0 {
+				c.ctxt.Diag("jump offset must be aligned to 4 bytes\n%v", p)
+			}
+			v = int32(distance) >> 2
 		}
 		o1 = OP_B_BL(c.opirr(p.As), uint32(v))
 		if p.To.Sym != nil {

@@ -175,11 +175,15 @@ func a()
 	}
 
 	// Build generated files.
+	// The long jump is expected to be rejected by asm.
 	cmd := testenv.Command(t, testenv.GoToolPath(t), "build")
 	cmd.Dir = dir
 	out, err := cmd.CombinedOutput()
-	if err != nil {
-		t.Errorf("Build failed: %v, output: %s", err, out)
+	if err == nil {
+		t.Errorf("Build unexpectedly succeeded: output: %s", out)
+	}
+	if !bytes.Contains(out, []byte("28-bit jump distance too far")) {
+		t.Errorf("Build failed without expected diagnostics: output: %s", out)
 	}
 }
 
