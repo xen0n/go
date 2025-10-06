@@ -334,6 +334,10 @@ const (
 	R_LOONG64_ADDR_HI
 	R_LOONG64_ADDR_LO
 
+	// R_LOONG64_ADDR_PCREL20_S2 resolves to the 22-bit, 4-byte aligned offset of an
+	// external address, by encoding it into a PCADDI instruction.
+	R_LOONG64_ADDR_PCREL20_S2
+
 	// R_LOONG64_TLS_LE_HI resolves to the high 20 bits of a TLS address (offset from
 	// thread pointer), by encoding it into the instruction.
 	// R_LOONG64_TLS_LE_LO resolves to the low 12 bits of a TLS address (offset from
@@ -344,6 +348,10 @@ const (
 	// R_CALLLOONG64 resolves to non-PC-relative target address of a CALL (BL/JIRL)
 	// instruction, by encoding the address into the instruction.
 	R_CALLLOONG64
+
+	// R_CALL36LOONG64 resolves to the 38-bit 4-byte aligned PC-relative target
+	// address of a PCADDU18I + JIRL pair, by encoding it into the instructions.
+	R_CALL36LOONG64
 
 	// R_LOONG64_TLS_IE_HI and R_LOONG64_TLS_IE_LO relocates a pcalau12i, ld.d
 	// pair to compute the address of the GOT slot of the tls symbol.
