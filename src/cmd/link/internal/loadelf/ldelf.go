@@ -603,6 +603,11 @@ func Load(l *loader.Loader, arch *sys.Arch, localSymVersion int, f *bio.Reader, 
 					continue
 				}
 
+				if sect.name == ".group" && (strings.HasPrefix(elfsym.name, "wm4.") || strings.HasPrefix(elfsym.name, "wm8.")) {
+					// gcc DWARF symbols, on loong64 and possibly others.
+					continue
+				}
+
 				if arch.Family == sys.RISCV64 &&
 					(strings.HasPrefix(elfsym.name, "$d") || strings.HasPrefix(elfsym.name, "$x")) {
 					// Ignore RISC-V mapping symbols, which
