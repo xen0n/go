@@ -355,6 +355,10 @@ type workType struct {
 		lock mutex // no lock rank because it's a leaf lock (see mklockrank.go).
 		all  *spanSPMC
 	}
+	spanSPMCs11 struct {
+		lock mutex // no lock rank because it's a leaf lock (see mklockrank.go).
+		all  *spanSPMC11
+	}
 
 	// Restore 64-bit alignment on 32-bit.
 	// _ uint32

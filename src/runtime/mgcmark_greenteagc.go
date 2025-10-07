@@ -361,6 +361,8 @@ type spanQueue struct {
 	}
 }
 
+type spanQueue11 = spanQueue
+
 // putFast tries to put s onto the queue, but may fail if it's full.
 func (q *spanQueue) putFast(s objptr) (ok bool) {
 	if q.tail-q.head == uint32(len(q.ring)) {
@@ -716,6 +718,8 @@ type spanSPMC struct {
 	cap  uint32 // cap(ring))
 	ring *objptr
 }
+
+type spanSPMC11 = spanSPMC
 
 // newSpanSPMC allocates and initializes a new spmc with the provided capacity.
 //

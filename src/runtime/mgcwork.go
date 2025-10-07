@@ -106,7 +106,8 @@ type gcWork struct {
 	// spanq is a queue of spans to process.
 	//
 	// Only used if goexperiment.GreenTeaGC.
-	spanq spanQueue
+	spanq   spanQueue
+	spanq11 spanQueue11
 
 	// ptrBuf is a temporary buffer used by span scanning.
 	ptrBuf *[pageSize / goarch.PtrSize]uintptr
