@@ -84,7 +84,8 @@ func ParseGOEXPERIMENT(goos, goarch, goexp string) (*ExperimentFlags, error) {
 		Dwarf5:                dwarf5Supported,
 		RandomizedHeapBase64:  true,
 		SizeSpecializedMalloc: true,
-		GreenTeaGC:            true,
+		// GreenTeaGC:            true,
+		GreenTeaGC: goarch != "loong64",
 	}
 
 	// Start with the statically enabled set of experiments.

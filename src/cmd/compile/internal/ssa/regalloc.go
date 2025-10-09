@@ -123,6 +123,7 @@ import (
 	"internal/buildcfg"
 	"math"
 	"math/bits"
+	"strings"
 	"unsafe"
 )
 
@@ -363,7 +364,7 @@ func (s *regAllocState) freeReg(r register) {
 	}
 
 	// Mark r as unused.
-	if s.f.pass.debug > regDebug {
+	if s.f.PrintOrHtmlSSA && s.f.pass.debug > regDebug {
 		fmt.Printf("freeReg %s (dump %s/%s)\n", &s.registers[r], v, s.regs[r].c)
 	}
 	s.regs[r] = regState{}
@@ -410,8 +411,11 @@ func (s *regAllocState) setOrig(c *Value, v *Value) {
 // assignReg assigns register r to hold c, a copy of v.
 // r must be unused.
 func (s *regAllocState) assignReg(r register, v *Value, c *Value) {
-	if s.f.pass.debug > regDebug {
+	if s.f.PrintOrHtmlSSA && s.f.pass.debug > regDebug {
 		fmt.Printf("assignReg %s %s/%s\n", &s.registers[r], v, c)
+	}
+	if v.Op == OpLOONG64LoweredAtomicAnd32 {
+		// panic("123")
 	}
 	// Allocate v to r.
 	s.values[v.ID].regs |= regMask(1) << r
@@ -494,7 +498,7 @@ func (s *regAllocState) allocReg(mask regMask, v *Value) register {
 		r2 := pickReg(m)
 		c := s.curBlock.NewValue1(v2.Pos, OpCopy, v2.Type, s.regs[r].c)
 		s.copies[c] = false
-		if s.f.pass.debug > regDebug {
+		if s.f.PrintOrHtmlSSA && s.f.pass.debug > regDebug {
 			fmt.Printf("copy %s to %s : %s\n", v2, c, &s.registers[r2])
 		}
 		s.setOrig(c, v2)
@@ -506,7 +510,7 @@ func (s *regAllocState) allocReg(mask regMask, v *Value) register {
 	// drop from startRegs in that case.
 	if s.usedSinceBlockStart&(regMask(1)<<r) == 0 {
 		if s.startRegsMask&(regMask(1)<<r) == 1 {
-			if s.f.pass.debug > regDebug {
+			if s.f.PrintOrHtmlSSA && s.f.pass.debug > regDebug {
 				fmt.Printf("dropped from startRegs: %s\n", &s.registers[r])
 			}
 			s.startRegsMask &^= regMask(1) << r
@@ -635,7 +639,7 @@ func (s *regAllocState) allocValToReg(v *Value, mask regMask, nospill bool, pos 
 	} else {
 		// Load v from its spill location.
 		spill := s.makeSpill(v, s.curBlock)
-		if s.f.pass.debug > logSpills {
+		if s.f.PrintOrHtmlSSA && s.f.pass.debug > logSpills {
 			s.f.Warnl(vi.spill.Pos, "load spill for %v from %v", v, spill)
 		}
 		c = s.curBlock.NewValue1(pos, OpLoadReg, v.Type, spill)
@@ -1002,7 +1006,7 @@ func (s *regAllocState) regalloc(f *Func) {
 	}
 
 	for _, b := range s.visitOrder {
-		if s.f.pass.debug > regDebug {
+		if s.f.PrintOrHtmlSSA && s.f.pass.debug > regDebug {
 			fmt.Printf("Begin processing block %v\n", b)
 		}
 		s.curBlock = b
@@ -1057,7 +1061,7 @@ func (s *regAllocState) regalloc(f *Func) {
 			}
 			s.nextCall[i] = nextCall
 		}
-		if s.f.pass.debug > regDebug {
+		if s.f.PrintOrHtmlSSA && s.f.pass.debug > regDebug {
 			fmt.Printf("use distances for %s\n", b)
 			for i := range s.values {
 				vi := &s.values[i]
@@ -1159,7 +1163,7 @@ func (s *regAllocState) regalloc(f *Func) {
 			p := b.Preds[idx].b
 			s.setState(s.endRegs[p.ID])
 
-			if s.f.pass.debug > regDebug {
+			if s.f.PrintOrHtmlSSA && s.f.pass.debug > regDebug {
 				fmt.Printf("starting merge block %s with end state of %s:\n", b, p)
 				for _, x := range s.endRegs[p.ID] {
 					fmt.Printf("  %s: orig:%s cache:%s\n", &s.registers[x.r], x.v, x.c)
@@ -1215,7 +1219,7 @@ func (s *regAllocState) regalloc(f *Func) {
 						r2 := pickReg(m)
 						c := p.NewValue1(a.Pos, OpCopy, a.Type, s.regs[r].c)
 						s.copies[c] = false
-						if s.f.pass.debug > regDebug {
+						if s.f.PrintOrHtmlSSA && s.f.pass.debug > regDebug {
 							fmt.Printf("copy %s to %s : %s\n", a, c, &s.registers[r2])
 						}
 						s.setOrig(c, a)
@@ -1312,7 +1316,7 @@ func (s *regAllocState) regalloc(f *Func) {
 			s.startRegs[b.ID] = make([]startReg, len(regList))
 			copy(s.startRegs[b.ID], regList)
 
-			if s.f.pass.debug > regDebug {
+			if s.f.PrintOrHtmlSSA && s.f.pass.debug > regDebug {
 				fmt.Printf("after phis\n")
 				for _, x := range s.startRegs[b.ID] {
 					fmt.Printf("  %s: v%d\n", &s.registers[x.r], x.v.ID)
@@ -1415,7 +1419,7 @@ func (s *regAllocState) regalloc(f *Func) {
 		for idx, v := range oldSched {
 			s.curIdx = nphi + idx
 			tmpReg := noRegister
-			if s.f.pass.debug > regDebug {
+			if s.f.PrintOrHtmlSSA && s.f.pass.debug > regDebug {
 				fmt.Printf("  processing %s\n", v.LongString())
 			}
 			regspec := s.regspec(v)
@@ -1523,7 +1527,7 @@ func (s *regAllocState) regalloc(f *Func) {
 				continue
 			}
 
-			if s.f.pass.debug > regDebug {
+			if s.f.PrintOrHtmlSSA && s.f.pass.debug > regDebug {
 				fmt.Printf("value %s\n", v.LongString())
 				fmt.Printf("  out:")
 				for _, r := range dinfo[idx].out {
@@ -1810,7 +1814,13 @@ func (s *regAllocState) regalloc(f *Func) {
 					// (Not all instructions need that distinct part, but it is conservative.)
 					used |= regMask(1) << tmpReg
 				}
+				if s.f.PrintOrHtmlSSA && s.f.pass.debug > regDebug && strings.HasPrefix(v.Op.String(), "LoweredAtomicAnd") {
+					fmt.Printf(">> allocating output for %s, len(outputs)=%d\n", v.LongString(), len(regspec.outputs))
+				}
 				for _, out := range regspec.outputs {
+					if s.f.PrintOrHtmlSSA && s.f.pass.debug > regDebug && strings.HasPrefix(v.Op.String(), "LoweredAtomicAnd") {
+						fmt.Printf(">>   out[%d] allowed %s\n", out.idx, out.regs.String())
+					}
 					if out.regs == 0 {
 						continue
 					}
@@ -1938,7 +1948,7 @@ func (s *regAllocState) regalloc(f *Func) {
 			if !s.values[v.ID].needReg {
 				continue
 			}
-			if s.f.pass.debug > regDebug {
+			if s.f.PrintOrHtmlSSA && s.f.pass.debug > regDebug {
 				fmt.Printf("  processing control %s\n", v.LongString())
 			}
 			// We assume that a control input can be passed in any
@@ -2072,7 +2082,7 @@ func (s *regAllocState) regalloc(f *Func) {
 				// we'll rematerialize during the merge.
 				continue
 			}
-			if s.f.pass.debug > regDebug {
+			if s.f.PrintOrHtmlSSA && s.f.pass.debug > regDebug {
 				fmt.Printf("live-at-end spill for %s at %s\n", s.orig[e.ID], b)
 			}
 			spill := s.makeSpill(s.orig[e.ID], b)
@@ -2130,7 +2140,7 @@ func (s *regAllocState) regalloc(f *Func) {
 		progress := false
 		for c, used := range s.copies {
 			if !used && c.Uses == 0 {
-				if s.f.pass.debug > regDebug {
+				if s.f.PrintOrHtmlSSA && s.f.pass.debug > regDebug {
 					fmt.Printf("delete copied value %s\n", c.LongString())
 				}
 				c.resetArgs()
@@ -2286,7 +2296,7 @@ func (s *regAllocState) shuffle(stacklive [][]ID) {
 	e.s = s
 	e.cache = map[ID][]*Value{}
 	e.contents = map[Location]contentRecord{}
-	if s.f.pass.debug > regDebug {
+	if s.f.PrintOrHtmlSSA && s.f.pass.debug > regDebug {
 		fmt.Printf("shuffle %s\n", s.f.Name)
 		fmt.Println(s.f.String())
 	}
@@ -2304,7 +2314,7 @@ func (s *regAllocState) shuffle(stacklive [][]ID) {
 		}
 	}
 
-	if s.f.pass.debug > regDebug {
+	if s.f.PrintOrHtmlSSA && s.f.pass.debug > regDebug {
 		fmt.Printf("post shuffle %s\n", s.f.Name)
 		fmt.Println(s.f.String())
 	}
@@ -2347,7 +2357,7 @@ type dstRecord struct {
 
 // setup initializes the edge state for shuffling.
 func (e *edgeState) setup(idx int, srcReg []endReg, dstReg []startReg, stacklive []ID) {
-	if e.s.f.pass.debug > regDebug {
+	if e.s.f.PrintOrHtmlSSA && e.s.f.pass.debug > regDebug {
 		fmt.Printf("edge %s->%s\n", e.p, e.b)
 	}
 
@@ -2400,7 +2410,7 @@ func (e *edgeState) setup(idx int, srcReg []endReg, dstReg []startReg, stacklive
 	}
 	e.destinations = dsts
 
-	if e.s.f.pass.debug > regDebug {
+	if e.s.f.PrintOrHtmlSSA && e.s.f.pass.debug > regDebug {
 		for _, vid := range e.cachedVals {
 			a := e.cache[vid]
 			for _, c := range a {
@@ -2464,7 +2474,7 @@ func (e *edgeState) process() {
 		vid := e.contents[loc].vid
 		c := e.contents[loc].c
 		r := e.findRegFor(c.Type)
-		if e.s.f.pass.debug > regDebug {
+		if e.s.f.PrintOrHtmlSSA && e.s.f.pass.debug > regDebug {
 			fmt.Printf("breaking cycle with v%d in %s:%s\n", vid, loc, c)
 		}
 		e.erase(r)
@@ -2486,6 +2496,45 @@ func (e *edgeState) process() {
 func (e *edgeState) processDest(loc Location, vid ID, splice **Value, pos src.XPos) bool {
 	pos = pos.WithNotStmt()
 	occupant := e.contents[loc]
+
+	if e.s.f.PrintOrHtmlSSA && e.s.f.pass.debug > regDebug {
+		occupantStr := "<vacant>"
+		if occupant.vid != 0 {
+			occupantStr = fmt.Sprintf("v%d", occupant.vid)
+		}
+		origV := e.s.orig[occupant.vid]
+
+		lastSurvivingStr := ""
+		if len(e.cache[occupant.vid]) == 1 && !e.s.values[occupant.vid].rematerializeable {
+			lastSurvivingStr = ", last surviving copy"
+		}
+
+		fmt.Printf(
+			"> try to move v%d to %s (occupant %s, orig %v%s)\n",
+			vid,
+			loc,
+			occupantStr,
+			origV,
+			lastSurvivingStr,
+		)
+
+		if occupant.vid != 0 {
+			fmt.Printf("> occupant %v: op %s, type %v, needRegister %v\n", occupant.c, occupant.c.Op.String(), occupant.c.Type, occupant.c.needRegister())
+			fmt.Printf("> occupant.Type.IsMemory() = %v\n", occupant.c.Type.IsMemory())
+			fmt.Printf("> occupant.Type.IsVoid() = %v\n", occupant.c.Type.IsVoid())
+			fmt.Printf("> occupant.Type.IsFlags() = %v\n", occupant.c.Type.IsFlags())
+			fmt.Printf("> occupant.Type.IsTuple() = %v\n", occupant.c.Type.IsTuple())
+		}
+
+		if origV != nil {
+			fmt.Printf("> orig %v: op %s, type %v, needRegister %v\n", origV, origV.Op.String(), origV.Type, origV.needRegister())
+			fmt.Printf("> orig.Type.IsMemory() = %v\n", origV.Type.IsMemory())
+			fmt.Printf("> orig.Type.IsVoid() = %v\n", origV.Type.IsVoid())
+			fmt.Printf("> orig.Type.IsFlags() = %v\n", origV.Type.IsFlags())
+			fmt.Printf("> orig.Type.IsTuple() = %v\n", origV.Type.IsTuple())
+		}
+	}
+
 	if occupant.vid == vid {
 		// Value is already in the correct place.
 		e.contents[loc] = contentRecord{vid, occupant.c, true, pos}
@@ -2515,7 +2564,7 @@ func (e *edgeState) processDest(loc Location, vid ID, splice **Value, pos src.XP
 	v := e.s.orig[vid]
 	var c *Value
 	var src Location
-	if e.s.f.pass.debug > regDebug {
+	if e.s.f.PrintOrHtmlSSA && e.s.f.pass.debug > regDebug {
 		fmt.Printf("moving v%d to %s\n", vid, loc)
 		fmt.Printf("sources of v%d:", vid)
 	}
@@ -2525,7 +2574,7 @@ func (e *edgeState) processDest(loc Location, vid ID, splice **Value, pos src.XP
 	} else {
 		for _, w := range e.cache[vid] {
 			h := e.s.f.getHome(w.ID)
-			if e.s.f.pass.debug > regDebug {
+			if e.s.f.PrintOrHtmlSSA && e.s.f.pass.debug > regDebug {
 				fmt.Printf(" %s:%s", h, w)
 			}
 			_, isreg := h.(*Register)
@@ -2535,7 +2584,7 @@ func (e *edgeState) processDest(loc Location, vid ID, splice **Value, pos src.XP
 			}
 		}
 	}
-	if e.s.f.pass.debug > regDebug {
+	if e.s.f.PrintOrHtmlSSA && e.s.f.pass.debug > regDebug {
 		if src != nil {
 			fmt.Printf(" [use %s]\n", src)
 		} else {
@@ -2660,7 +2709,7 @@ func (e *edgeState) set(loc Location, vid ID, c *Value, final bool, pos src.XPos
 			e.rematerializeableRegs |= regMask(1) << uint(r.num)
 		}
 	}
-	if e.s.f.pass.debug > regDebug {
+	if e.s.f.PrintOrHtmlSSA && e.s.f.pass.debug > regDebug {
 		fmt.Printf("%s\n", c.LongString())
 		fmt.Printf("v%d now available in %s:%s\n", vid, loc, c)
 	}
@@ -2685,7 +2734,7 @@ func (e *edgeState) erase(loc Location) {
 	a := e.cache[vid]
 	for i, c := range a {
 		if e.s.f.getHome(c.ID) == loc {
-			if e.s.f.pass.debug > regDebug {
+			if e.s.f.PrintOrHtmlSSA && e.s.f.pass.debug > regDebug {
 				fmt.Printf("v%d no longer available in %s:%s\n", vid, loc, c)
 			}
 			a[i], a = a[len(a)-1], a[:len(a)-1]
@@ -2748,7 +2797,7 @@ func (e *edgeState) findRegFor(typ *types.Type) Location {
 					t := LocalSlot{N: e.s.f.NewLocal(c.Pos, c.Type), Type: c.Type}
 					// TODO: reuse these slots. They'll need to be erased first.
 					e.set(t, vid, x, false, c.Pos)
-					if e.s.f.pass.debug > regDebug {
+					if e.s.f.PrintOrHtmlSSA && e.s.f.pass.debug > regDebug {
 						fmt.Printf("  SPILL %s->%s %s\n", r, t, x.LongString())
 					}
 				}
@@ -2973,7 +3022,7 @@ func (s *regAllocState) computeLive() {
 			break
 		}
 	}
-	if f.pass.debug > regDebug {
+	if f.PrintOrHtmlSSA && f.pass.debug > regDebug {
 		fmt.Println("live values at end of each block")
 		for _, b := range f.Blocks {
 			fmt.Printf("  %s:", b)
