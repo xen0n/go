@@ -143,6 +143,7 @@ func init() {
 		gp2load   = regInfo{inputs: []regMask{gpspsbg, gpg}, outputs: []regMask{gp}}
 		gpstore   = regInfo{inputs: []regMask{gpspsbg, gpg}}
 		gpstore2  = regInfo{inputs: []regMask{gpspsbg, gpg, gpg | rz}}
+		gpoldatom = regInfo{inputs: []regMask{gpspsbg, gpg}}
 		gpxchg    = regInfo{inputs: []regMask{gpspsbg, gpg}, outputs: []regMask{gp}}
 		gpcas     = regInfo{inputs: []regMask{gpspsbg, gpg, gpg}, outputs: []regMask{gp}}
 		preldreg  = regInfo{inputs: []regMask{gpspg}}
@@ -500,8 +501,8 @@ func init() {
 
 		// Atomic 32 bit AND/OR.
 		// *arg0 &= (|=) arg1. arg2=mem. returns nil.
-		{name: "LoweredAtomicAnd32", argLength: 3, reg: gpxchg, asm: "AMANDDBW", resultNotInArgs: true, faultOnNilArg0: true, hasSideEffects: true},
-		{name: "LoweredAtomicOr32", argLength: 3, reg: gpxchg, asm: "AMORDBW", resultNotInArgs: true, faultOnNilArg0: true, hasSideEffects: true},
+		{name: "LoweredAtomicAnd32", argLength: 3, reg: gpoldatom, asm: "AMANDDBW", resultNotInArgs: true, faultOnNilArg0: true, hasSideEffects: true},
+		{name: "LoweredAtomicOr32", argLength: 3, reg: gpoldatom, asm: "AMORDBW", resultNotInArgs: true, faultOnNilArg0: true, hasSideEffects: true},
 
 		// Atomic 32,64 bit AND/OR.
 		// *arg0 &= (|=) arg1. arg2=mem. returns <old content of *arg0, memory>. auxint must be zero.
